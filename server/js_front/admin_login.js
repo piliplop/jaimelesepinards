@@ -17,6 +17,7 @@ $(() => {
                 //todo : limited cookie time
                 $.cookie('auth_token', data.token)
                 console.log($.cookie('auth_token'))
+                location.reload()
             })
         })
     })

@@ -54,13 +54,29 @@ app.get('/pages/admin', (req, res) => {
 })
 
 app.get('/pages/admin/list', (req, res) => {
-  // if(req.query.auth_token){
-
-  // }else{
-    
-  // res.render('admin_list.ejs')
-  // }
-  res.render('admin_list.ejs')
+  cookies = parseCookies(req.headers.cookie)
+  // todo: fonction de vérification middleware ?
+  if (typeof (cookies['auth_token']) !== 'undefined') {
+    let query = `select * from admin_tokens where token like '${cookies['auth_token']}'`;
+    db_client.query(query, (err, res_db) => {
+      if (err) console.error(err);
+      if (res_db.rows.length > 0) {
+        query = `select * from commandes`;
+        db_client.query(query, (err, res_db) => {
+          if (err) console.error(err);
+          // console.log(res_db.rows)
+          res.render('admin_list.ejs', { commands: res_db.rows })
+        })
+      } else {
+        // todo: destruction du cookie
+        res.end('erreur d\'authentification')
+      }
+    })
+    //temp
+    // res.end();
+  } else {
+    res.render('admin_login.ejs')
+  }
 })
 
 app.get("/js/:file", (req, res) => {
@@ -75,7 +91,7 @@ app.get("/submit_command", (req, res) => {
   console.log(params);
   // todo: change id, treat sql injections
   const id = uuidv1();
-  const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, delivery_date) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', '${params.date_choice}')`;
+  const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, delivery_date, state) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', '${params.date_choice}', 'waiting')`;
   console.log(query);
   db_client.query(query, (err, res) => {
     if (err) console.log(err);
@@ -105,6 +121,16 @@ app.get('/submit_admin_password', (req, res) => {
       })
     }
   })
+});
+
+app.get('/change_command_state', (req, res) => {
+  console.log(req.query);
+  // todo: check that req.query.new_state is valid
+  const query = `update commandes set state = '${req.query.new_state}' where id like '${req.query.command_id}'`;
+  db_client.query(query, (err, res_db) => {
+    if(err) console.error(err);
+    res.end('')
+  });
 })
 
 /**
@@ -124,3 +150,14 @@ app.get('/submit_admin_password', (req, res) => {
 app.listen("3000");
 
 console.log("http://localhost:3000");
+
+function parseCookies(cookies) {
+  let res = [];
+  if (typeof (cookies) !== 'string') return [];
+  cookies.split('; ').forEach(v => {
+    if (typeof (v) !== 'string') return [];
+    const sv = v.split('=');
+    res[sv[0]] = sv[1];
+  });
+  return res;
+}

@@ -1,20 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8" />
     <title>Liste des commandes</title>
 </head>
 
 <body>
-    <h1>Connexion</h1>
-    <!-- todo: login + mdp propre à chaque membre -->
-    <b>Entre ton mot de passe</b>
-    <input type="text" id="password_input" hint="mot de passe">
-    <input type="button" id="password_submit" value="Valider">
+    <h1>Liste Des demandes</h1>
+    <!--<p><%= JSON.stringify(commands) %></p>-->
+    <% for(c in commands) {%>
+    <!-- <p>
+        <%=JSON.stringify(commands[c])%>
+    </p> -->
+    <div class="command" id="<%=commands[c]['id']%>">
+        <b>Type de SOS:
+            <%=commands[c]['sos_type']%></b>
+        <p>Adresse de livraison:
+            <%=commands[c]['delivery_adress']%>
+        </p>
+        <p>Date demandée :
+            <%=commands[c]['delivery_date']%> Heure :
+            <%=commands[c]['delivery_hour']%>
+        </p>
+        <p>Informations additionnelles :
+            <%=commands[c]['additional_informations']%>
+        </p>
+        <p>ID de la commande :
+            <%=commands[c]['id']%>
+        </p>
+        <p>Etat de la commande :
+            <%=commands[c]['state']%>
+        </p>
+        <div class="change_state">
+            Changer l'état :
+            <select class="select_state">
+                <option value="waiting">En attente</option>
+                <option value="accepted">Acceptée</option>
+                <option value="preparing">En préparation</option>
+                <option value="delivering">En livraison</option>
+                <option value="archived">Archivée</option>
+                <option value="declined">Refusée</option>
+            </select>
+            <input type="button" value="Valider" class="submit_change_state">
+        </div>
+        <hr>
+    </div>
+    <%}%>
 </body>
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="/js/jquery.cookie.js"></script>
-<script src="/js/admin_login.js"></script>
+<script src="/js/admin_list.js"></script>
 </html>
