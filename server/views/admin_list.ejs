@@ -29,9 +29,8 @@
         <p>ID de la commande :
             <%=commands[c]['id']%>
         </p>
-        <p>Etat de la commande :
-            <%=commands[c]['state']%>
-        </p>
+        <!-- todo: translate state -->
+        <p class="command_state">Etat de la commande : <%=commands[c]['state']%></p>
         <div class="change_state">
             Changer l'état :
             <select class="select_state">

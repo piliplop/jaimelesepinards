@@ -114,4 +114,35 @@ $(() => {
             }
         })
     })
+    $('#submit_command_id').click(() => {
+        const new_id = $('#input_command_id').val();
+        let command_tokens = $.cookie('command_tokens');
+        let already_shown = false;
+        if (typeof (command_tokens) !== 'undefined') {
+            JSON.parse(command_tokens).tokens.forEach(v => {
+                if (v.id === new_id) already_shown = true;
+            })
+        }
+        // console.log($('#input_command_id').val())
+        if (!already_shown) {
+            $.get({
+                url: '/get_command',
+                data: {
+                    id: new_id
+                },
+                success: d => {
+                    if (typeof (command_tokens) === 'undefined') {
+                        $.cookie('command_tokens', JSON.stringify({ tokens: [{ id: d.id, sos_type: d.sos_type }] }))
+                    }
+                    else {
+                        command_tokens = JSON.parse(command_tokens);
+                        command_tokens.tokens.push({ id: d.id, sos_type: d.sos_type });
+                        command_tokens = JSON.stringify(command_tokens);
+                        $.cookie('command_tokens', command_tokens);
+                    }
+                    updateTrackLinks();
+                }
+            })
+        }
+    })
 })

@@ -33,8 +33,10 @@ app.get("/pages/suivi/:token", (req, res) => {
     `select * from commandes where id like '${req.params.token}'`,
     (err, quer_res) => {
       if (err) console.error(err);
-      else console.log(quer_res.rows);
-      res.render("suivi.ejs", { rows: quer_res.rows[0] });
+      else {
+        console.log(quer_res.rows);
+        res.render("suivi.ejs", { rows: quer_res.rows[0] });
+      }
     }
   );
 });
@@ -53,7 +55,7 @@ app.get('/pages/admin', (req, res) => {
   res.redirect('/pages/admin/list');
 })
 
-app.get('/pages/admin/list', (req, res) => {
+app.get('/pages/admin/:page', (req, res) => {
   cookies = parseCookies(req.headers.cookie)
   // todo: fonction de vérification middleware ?
   if (typeof (cookies['auth_token']) !== 'undefined') {
@@ -65,7 +67,7 @@ app.get('/pages/admin/list', (req, res) => {
         db_client.query(query, (err, res_db) => {
           if (err) console.error(err);
           // console.log(res_db.rows)
-          res.render('admin_list.ejs', { commands: res_db.rows })
+          res.render('admin_' + req.params.page + '.ejs', { commands: res_db.rows })
         })
       } else {
         // todo: destruction du cookie
@@ -83,6 +85,14 @@ app.get("/js/:file", (req, res) => {
   res.sendFile("js_front/" + req.params.file, project_root);
 });
 
+let MAX_ID = '0';
+db_client.query('select id from commandes', (err, res) => {
+  MAX_ID = Math.max(...res.rows.map(v => {
+    return parseInt(v.id);
+  }));
+})
+
+//todo champ bdd en autoincrement
 app.get("/submit_command", (req, res) => {
   let params = req.query;
   for (i in params) {
@@ -91,6 +101,7 @@ app.get("/submit_command", (req, res) => {
   console.log(params);
   // todo: change id, treat sql injections
   const id = uuidv1();
+  // const id = ++MAX_ID;
   const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, delivery_date, state) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', '${params.date_choice}', 'waiting')`;
   console.log(query);
   db_client.query(query, (err, res) => {
@@ -107,7 +118,7 @@ app.get("/submit_command", (req, res) => {
 // todo: use hash for password
 app.get('/submit_admin_password', (req, res) => {
   // req.query.password
-  const password_query = `select * from authentification where password like '${req.query.password}'`
+  const password_query = `select * from authentification where password like '${req.query.password}'`;
   db_client.query(password_query, (err, res_db) => {
     if (err) console.log(err);
     if (res_db.rows.length === 1) {
@@ -124,13 +135,29 @@ app.get('/submit_admin_password', (req, res) => {
 });
 
 app.get('/change_command_state', (req, res) => {
-  console.log(req.query);
+  // console.log(req.query);
   // todo: check that req.query.new_state is valid
   const query = `update commandes set state = '${req.query.new_state}' where id like '${req.query.command_id}'`;
   db_client.query(query, (err, res_db) => {
-    if(err) console.error(err);
+    if (err) console.error(err);
     res.end('')
   });
+});
+
+app.get('/get_command', (req, res) => {
+  const query = `select * from commandes where id like '${req.query.id}'`;
+  db_client.query(query, (err, res_db) => {
+    if (err) console.error(err);
+    else {
+      // console.log(res_db.rows)
+      if (res_db.rows.length === 1) {
+        res.json({
+          id: res_db.rows[0]['id'],
+          sos_type: res_db.rows[0]['sos_type']
+        })
+      }
+    }
+  })
 })
 
 /**
