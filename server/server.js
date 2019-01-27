@@ -4,6 +4,9 @@ const project_root = { root: "." };
 const uuidv1 = require("uuidv1");
 var shortid = require('shortid');
 const nodemailer = require('nodemailer');
+const request = require('request');
+
+const CAPTCHA_SECRET = '6LfvHo0UAAAAAAJkQCBbiZPfoX597UyOrNko3tlx';
 
 // todo : change auth
 const transporter = nodemailer.createTransport({
@@ -33,6 +36,8 @@ db_client.connect();
 //redirect to the command page
 
 // escape all single quotes in query in case it is used for the database
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 app.use(function (req, res, next) {
   for (i in req.query) {
     req.query[i] = req.query[i].replace(/'/g, "''");
@@ -69,8 +74,6 @@ app.get("/pages/suivi/:token", (req, res) => {
 
 app.get('/pages/commande', (req, res) => {
   res.render('commande.ejs');
-
-  // console.log(req.query)
 })
 
 app.get('/pages/admin', (req, res) => {
@@ -125,39 +128,62 @@ db_client.query('select id from commandes', (err, res) => {
 //todo champ bdd en autoincrement
 app.get("/submit_command", (req, res) => {
   let params = req.query;
+  // console.log(params.captcha_token)
   // for (i in params) {
   //   params[i] = params[i].replace(/'/g, "''");
   // }
   console.log(params);
-  // todo: change id, treat sql injections
-  // const id = uuidv1();
-  const id = shortid.generate();
-  // const id = ++MAX_ID;
-  const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, delivery_date, state, email) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', '${params.date_choice}', 'waiting', '${params.email_choice}')`;
-  console.log(query);
-  db_client.query(query, (err, res) => {
-    if (err) console.log(err);
-    // db_client.end();
-  });
-  res.json({
-    id
-    // params.
-  });
+  let captcha_result = 'unsettt';
+  //todo : verify params['g-recaptcha-response-100000'] exists
+  const verification_url = `https://www.google.com/recaptcha/api/siteverify?secret=${CAPTCHA_SECRET}&response=${params.captcha_response}`;
+  request(verification_url, (err, res_captcha, body) => {
+    if (err) console.error(err);
+    else {
+      body = JSON.parse(body);
+      console.log('BODY ', body)
+      if (body.success !== undefined && !body.success) {
+        captcha_result = 'Failed captcha verification';
+        res.json({
+          captcha_failed: true
+        });
+      } else {
+        captcha_result = 'Successful captcha verification !';
 
-  if (params.email_choice !== '') {
-    const mail_params = {
-      // from: "Foo from jul@bar.com <donotreply@bar.com>",
-      to: params.email_choice,
-      subject: "ta nouvelle commande",
-      // todo : change adress
-      text: "tu viens de commander un sos de type " + params.sos_choice + "\n\npour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
-    };
+        if (params.email_choice !== '') {
+          const mail_params = {
+            // from: "Foo from jul@bar.com <donotreply@bar.com>",
+            to: params.email_choice,
+            subject: "ta nouvelle commande",
+            // todo : change adress
+            text: "tu viens de commander un sos de type " + params.sos_choice + "\n\npour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
+          };
 
-    transporter.sendMail(mail_params, (err, info) => {
-      if (err) console.error(err);
-      else console.log('mail sent ! ' + info.response);
-    })
-  }
+          transporter.sendMail(mail_params, (err, info) => {
+            if (err) console.error(err);
+            else console.log('mail sent ! ' + info.response);
+          })
+        }
+
+        // todo: change id, treat sql injections
+        // const id = uuidv1();
+        const id = shortid.generate();
+        // const id = ++MAX_ID;
+        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, delivery_date, state, email) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', '${params.date_choice}', 'waiting', '${params.email_choice}')`;
+        console.log(query);
+        db_client.query(query, (err, res) => {
+          if (err) console.log(err);
+          // db_client.end();
+        });
+
+        res.json({
+          id,
+          captcha_result,
+          // params.
+        });
+      }
+    }
+
+  })
 });
 
 // todo: XSS and SQL injections protection
