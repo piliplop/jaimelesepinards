@@ -9,7 +9,7 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'immulistes@gmail.com',
+    user: 'noreply.immulistes@gmail.com',
     pass: 'immulistes2k19'
   }
 })
@@ -144,18 +144,20 @@ app.get("/submit_command", (req, res) => {
     // params.
   });
 
-  const mail_params = {
-    from: "immulistes@gmail.com",
-    to: params.email_choice,
-    subject: "ta nouvelle commande",
-    // todo : change adress
-    text: "tu viens de commander un sos de type " + params.sos_choice + "\n\npour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
-  };
+  if (params.email_choice !== '') {
+    const mail_params = {
+      // from: "Foo from jul@bar.com <donotreply@bar.com>",
+      to: params.email_choice,
+      subject: "ta nouvelle commande",
+      // todo : change adress
+      text: "tu viens de commander un sos de type " + params.sos_choice + "\n\npour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
+    };
 
-  transporter.sendMail(mail_params, (err, info) => {
-    if(err) console.error(err);
-    else console.log(info.response);
-  })
+    transporter.sendMail(mail_params, (err, info) => {
+      if (err) console.error(err);
+      else console.log('mail sent ! ' + info.response);
+    })
+  }
 });
 
 // todo: XSS and SQL injections protection
@@ -165,6 +167,7 @@ app.get('/submit_admin_password', (req, res) => {
   const password_query = `select * from authentification where password like '${req.query.password}'`;
   db_client.query(password_query, (err, res_db) => {
     if (err) console.log(err);
+    console.log(res_db.rows)
     if (res_db.rows.length === 1) {
       const token = uuidv1();
       const insert_query = `insert into admin_tokens values ('${token}')`
@@ -222,7 +225,7 @@ app.get('/get_command', (req, res) => {
 //     console.log(result)
 // }
 
-app.listen("3000");
+app.listen('3000');
 
 console.log("http://localhost:3000");
 

@@ -34,7 +34,10 @@ $(() => {
 
         JSON.parse($.cookie('command_tokens')).tokens.forEach(v => {
             // console.log(v)
-            $('#tracking_links').append(
+            $('#tracking_links')
+            .append($('<div></div') 
+            .attr('class', 'sos_link')           
+            .append(
                 $('<a></a>')
                     .attr('class', 'tracking_link')
                     .text(v.sos_type)
@@ -91,7 +94,7 @@ $(() => {
                             this.already_shown = false;
                         }
                     })
-            )
+            ))
         });
     }
 
@@ -115,7 +118,12 @@ $(() => {
                     command_tokens = JSON.stringify(command_tokens);
                     $.cookie('command_tokens', command_tokens);
                 }
-                updateTrackLinks()
+                updateTrackLinks();
+                if(data.email_choice !== ''){
+                    alert('Ton SOS est en attente d\'acceptation\non t\'a envoyé un mail au cas ou tu ne le voies plus sur cette page');
+                }else{
+                    alert('Ton SOS est en attente d\'acceptation');
+                }
             }
         })
     })

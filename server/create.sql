@@ -1,3 +1,4 @@
+drop table if exists public.admin_tokens;
 CREATE TABLE public.admin_tokens (
     token text
 );
@@ -5,6 +6,7 @@ CREATE TABLE public.admin_tokens (
 
 ALTER TABLE public.admin_tokens OWNER TO jul;
 
+drop table if exists public.authentification;
 CREATE TABLE public.authentification (
     password text
 );
@@ -12,6 +14,7 @@ CREATE TABLE public.authentification (
 
 ALTER TABLE public.authentification OWNER TO jul;
 
+drop table if exists public.commandes;
 CREATE TABLE public.commandes (
     id text NOT NULL,
     sos_type text,
@@ -26,22 +29,6 @@ CREATE TABLE public.commandes (
 
 
 ALTER TABLE public.commandes OWNER TO jul;
-
---
--- Name: commandes_cp; Type: TABLE; Schema: public; Owner: jul
---
-
-CREATE TABLE public.commandes_cp (
-    id text,
-    sos_type text,
-    delivery_date text,
-    delivery_hour text,
-    delivery_adress text,
-    additional_informations text
-);
-
-
-ALTER TABLE public.commandes_cp OWNER TO jul;
 
 
 --

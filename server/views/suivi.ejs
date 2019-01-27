@@ -5,7 +5,7 @@
     <title>Suivi de commande</title>
 </head>
 <body>
-    <p><%- JSON.stringify(rows)  %></p>
+    <!-- <p><%- JSON.stringify(rows)  %></p> -->
     <p>Type de SOS : <%= rows.sos_type %></p>
     <p>ID de la commande : <%= rows.id %></p>
     <p>Date d'arrivée demandée de la commande : <%= rows.delivery_date %><% if(rows.delivery_hour.length !== 0) { %>, heure : <%= rows.delivery_hour %> <% } %></p>
