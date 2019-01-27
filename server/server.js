@@ -105,6 +105,10 @@ app.get("/js/:file", (req, res) => {
   res.sendFile("js_front/" + req.params.file, project_root);
 });
 
+app.get('/css/:file', (req, res) => {
+  res.sendFile('css/' + req.params.file, project_root);
+})
+
 let MAX_ID = '0';
 db_client.query('select id from commandes', (err, res) => {
   MAX_ID = Math.max(...res.rows.map(v => {
