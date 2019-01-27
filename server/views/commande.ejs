@@ -5,7 +5,8 @@
     <link rel="stylesheet" href="/css/example.css">
 </head>
 <body>
-    <header>
+    <h1 id="main_title">Immulistés</h1>
+    <div class="header">
         <div id="tracking_links"></div>
         <div>
             <p>Tu ne vois pas ta commande ? ajoute-la avec son id :</p>
@@ -13,32 +14,34 @@
             <input type="button" id="submit_command_id" value="Valider">
         </div>
         <div id="tracking_informations"></div>
-    </header>
+    </div>
     <h1>Commande de SOS</h1>
-    <div id="div_sos_choice">
-        <p>Choisis ton SOS</p>  
-        <select id="sos_choice">
-            <option>SOS 1</option>
-            <option>SOS 2</option>
-            <option>...</option>
-        </select>
-    </div>
-    <div id="div_date_choice">
-        <p>Choisis la date et l'heure de livraison</p>
-        <input id="date_choice" type="date">
-        <input id="time_choice" type="time">
-    </div>
-    <div id="div_adress">
-        <p>Choisis l'adresse de livraison</p>
-        <input id="adress_choice" type="text">
-    </div>
-    <div id="div_email">
-        <p>entre ton email pour suivre facilement ta commande</p>
-        <input type="text" placeholder="exemple@mail.com" id="email_choice">
-    </div>
-    <div id="div_additionnal_informations">
-        <p>Autre chose chef ?</p>
-        <textarea id="additionnal_informations" placeholder="informations complémentaires"></textarea>
+    <div id="command_block">
+        <div class="block" id="div_sos_choice">
+            <p>Choisis ton SOS</p>  
+            <select id="sos_choice">
+                <option>SOS 1</option>
+                <option>SOS 2</option>
+                <option>...</option>
+            </select>
+        </div>
+        <div class="block"  id="div_date_choice">
+            <p>Choisis la date et l'heure de livraison</p>
+            <input id="date_choice" type="date">
+            <input id="time_choice" type="time">
+        </div>
+        <div class="block"  id="div_adress">
+            <p>Choisis l'adresse de livraison</p>
+            <input id="adress_choice" type="text">
+        </div>
+        <div class="block"  id="div_email">
+            <p>entre ton email pour suivre facilement ta commande</p>
+            <input type="text" placeholder="exemple@mail.com" id="email_choice">
+        </div>
+        <div class="block"  id="div_additionnal_informations">
+            <p>Autre chose chef ?</p>
+            <textarea id="additionnal_informations" placeholder="informations complémentaires"></textarea>
+        </div>
     </div>
     <input id="submit" type="button" value="valider">
 </body>

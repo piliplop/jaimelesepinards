@@ -4,7 +4,12 @@ $(() => {
 
     function initPage() {
         // $.removeCookie('command_tokens')
-        updateTrackLinks()
+        console.log(new URL(window.location.href).searchParams.get('add_sos'));
+        const new_sos_id = new URL(window.location.href).searchParams.get('add_sos');
+        if(new_sos_id){
+            addToListedCommands(new_sos_id, true);
+        }
+        updateTrackLinks();
     }
 
     function getInputData() {
@@ -18,10 +23,10 @@ $(() => {
     function updateTrackLinks() {
         $('#tracking_links').children().remove()
         $('#tracking_informations').children().remove()
-        $('header').children('#track_links_title').remove()
+        $('.header').children('#track_links_title').remove()
         if (typeof ($.cookie('command_tokens')) === 'undefined') return;
 
-        $('header').prepend(
+        $('.header').prepend(
             $('<h1></h1>')
                 .text('Suivi de commandes :')
                 .attr('id', 'track_links_title')
@@ -116,12 +121,17 @@ $(() => {
     })
     $('#submit_command_id').click(() => {
         const new_id = $('#input_command_id').val();
+        addToListedCommands(new_id);
+    })
+
+    function addToListedCommands(new_id, reload_page = false) {
         let command_tokens = $.cookie('command_tokens');
         let already_shown = false;
         if (typeof (command_tokens) !== 'undefined') {
             JSON.parse(command_tokens).tokens.forEach(v => {
-                if (v.id === new_id) already_shown = true;
-            })
+                if (v.id === new_id)
+                    already_shown = true;
+            });
         }
         // console.log($('#input_command_id').val())
         if (!already_shown) {
@@ -132,7 +142,7 @@ $(() => {
                 },
                 success: d => {
                     if (typeof (command_tokens) === 'undefined') {
-                        $.cookie('command_tokens', JSON.stringify({ tokens: [{ id: d.id, sos_type: d.sos_type }] }))
+                        $.cookie('command_tokens', JSON.stringify({ tokens: [{ id: d.id, sos_type: d.sos_type }] }));
                     }
                     else {
                         command_tokens = JSON.parse(command_tokens);
@@ -141,10 +151,16 @@ $(() => {
                         $.cookie('command_tokens', command_tokens);
                     }
                     updateTrackLinks();
+                    if(reload_page){
+                        window.location.replace('/');
+                    }
                 }
-            })
-        } else {
+            });
+        }
+        else {
             alert('Cette commande est déjà listée');
         }
-    })
-})
+    }
+    
+});
+

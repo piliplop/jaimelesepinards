@@ -9,6 +9,7 @@ les sources html du projet sont dans _server/views/ejs_. l'extension ".ejs" indi
 ### CSS
 * les fichiers CSS doivent être créés dans _server/css_
 * pour inclure un fichier CSS : \<link rel="stylesheet" href="/css/__nom_du_fichier.css__">
+* les fonts sont dans server/fonts
 
 ### JS
 * les fichiers js doivent être créés dans _server/js_front_

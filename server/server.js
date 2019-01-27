@@ -9,8 +9,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'jules.westersang@gmail.com',
-    pass: 'westercamp'
+    user: 'immulistes@gmail.com',
+    pass: 'immulistes2k19'
   }
 })
 
@@ -20,7 +20,7 @@ const db_client = new Client({
   host: "localhost",
   database: "site_immulistes",
   password: "yasuo",
-  port: 5432  
+  port: 5432
 });
 
 db_client.connect();
@@ -69,6 +69,8 @@ app.get("/pages/suivi/:token", (req, res) => {
 
 app.get('/pages/commande', (req, res) => {
   res.render('commande.ejs');
+
+  // console.log(req.query)
 })
 
 app.get('/pages/admin', (req, res) => {
@@ -109,6 +111,10 @@ app.get('/css/:file', (req, res) => {
   res.sendFile('css/' + req.params.file, project_root);
 })
 
+app.get('/fonts/:file', (req, res) => {
+  res.sendFile('fonts/' + req.params.file, project_root);
+})
+
 let MAX_ID = '0';
 db_client.query('select id from commandes', (err, res) => {
   MAX_ID = Math.max(...res.rows.map(v => {
@@ -137,6 +143,19 @@ app.get("/submit_command", (req, res) => {
     id
     // params.
   });
+
+  const mail_params = {
+    from: "immulistes@gmail.com",
+    to: params.email_choice,
+    subject: "ta nouvelle commande",
+    // todo : change adress
+    text: "tu viens de commander un sos de type " + params.sos_choice + "\n\npour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
+  };
+
+  transporter.sendMail(mail_params, (err, info) => {
+    if(err) console.error(err);
+    else console.log(info.response);
+  })
 });
 
 // todo: XSS and SQL injections protection
@@ -165,7 +184,7 @@ app.get('/change_command_state', (req, res) => {
   // for (i in req.query) {
   //   req.query[i] = req.query[i].replace(/'/g, "''");
   // }
-  const decline_reason = typeof(req.query.reason) === 'undefined' ? '' : req.query.reason;
+  const decline_reason = typeof (req.query.reason) === 'undefined' ? '' : req.query.reason;
   const query = `update commandes set state = '${req.query.new_state}', decline_reason = '${decline_reason}' where id like '${req.query.command_id}'`;
   db_client.query(query, (err, res_db) => {
     if (err) console.error(err);
