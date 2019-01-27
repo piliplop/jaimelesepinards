@@ -5,13 +5,14 @@
     <title>Suivi de commande</title>
 </head>
 <body>
-    <!-- <p><%- JSON.stringify(rows)  %></p> -->
+    <p><%- JSON.stringify(rows)  %></p>
     <p>Type de SOS : <%= rows.sos_type %></p>
     <p>ID de la commande : <%= rows.id %></p>
     <p>Date d'arrivée demandée de la commande : <%= rows.delivery_date %><% if(rows.delivery_hour.length !== 0) { %>, heure : <%= rows.delivery_hour %> <% } %></p>
     <p>Adresse de livraison : <%= rows.delivery_adress %></p>
     <% if(rows.additional_informations.length !== 0) { %><p>Informations supplémentaires fournies : <%= rows.additional_informations %></p><% } %>
     <p>Etat de la commande : <%=rows.state%></p>
+    <% if(rows.state === 'declined' && rows.decline_reason !==null){ %> <p>raison du refus : <%= rows.decline_reason %></p><%}%>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="/js/suivi.js"></script>

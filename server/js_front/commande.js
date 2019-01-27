@@ -143,6 +143,8 @@ $(() => {
                     updateTrackLinks();
                 }
             })
+        } else {
+            alert('Cette commande est déjà listée');
         }
     })
 })

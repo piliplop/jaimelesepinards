@@ -2,6 +2,17 @@ const express = require("express");
 const app = express();
 const project_root = { root: "." };
 const uuidv1 = require("uuidv1");
+var shortid = require('shortid');
+const nodemailer = require('nodemailer');
+
+// todo : change auth
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'jules.westersang@gmail.com',
+    pass: 'westercamp'
+  }
+})
 
 const { Client } = require("pg");
 const db_client = new Client({
@@ -9,7 +20,7 @@ const db_client = new Client({
   host: "localhost",
   database: "site_immulistes",
   password: "yasuo",
-  port: 5432
+  port: 5432  
 });
 
 db_client.connect();
@@ -20,6 +31,15 @@ db_client.connect();
 // });
 
 //redirect to the command page
+
+// escape all single quotes in query in case it is used for the database
+app.use(function (req, res, next) {
+  for (i in req.query) {
+    req.query[i] = req.query[i].replace(/'/g, "''");
+  }
+  next();
+});
+
 app.get("/pages", (req, res) => {
   res.redirect("/pages/commande");
 });
@@ -95,14 +115,15 @@ db_client.query('select id from commandes', (err, res) => {
 //todo champ bdd en autoincrement
 app.get("/submit_command", (req, res) => {
   let params = req.query;
-  for (i in params) {
-    params[i] = params[i].replace(/'/g, "''");
-  }
+  // for (i in params) {
+  //   params[i] = params[i].replace(/'/g, "''");
+  // }
   console.log(params);
   // todo: change id, treat sql injections
-  const id = uuidv1();
+  // const id = uuidv1();
+  const id = shortid.generate();
   // const id = ++MAX_ID;
-  const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, delivery_date, state) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', '${params.date_choice}', 'waiting')`;
+  const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, delivery_date, state, email) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', '${params.date_choice}', 'waiting', '${params.email_choice}')`;
   console.log(query);
   db_client.query(query, (err, res) => {
     if (err) console.log(err);
@@ -137,7 +158,11 @@ app.get('/submit_admin_password', (req, res) => {
 app.get('/change_command_state', (req, res) => {
   // console.log(req.query);
   // todo: check that req.query.new_state is valid
-  const query = `update commandes set state = '${req.query.new_state}' where id like '${req.query.command_id}'`;
+  // for (i in req.query) {
+  //   req.query[i] = req.query[i].replace(/'/g, "''");
+  // }
+  const decline_reason = typeof(req.query.reason) === 'undefined' ? '' : req.query.reason;
+  const query = `update commandes set state = '${req.query.new_state}', decline_reason = '${decline_reason}' where id like '${req.query.command_id}'`;
   db_client.query(query, (err, res_db) => {
     if (err) console.error(err);
     res.end('')
