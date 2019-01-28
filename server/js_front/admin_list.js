@@ -1,10 +1,13 @@
 $(() => {
     $('.submit_change_state').click(function () {
         const new_state = $(this).parent().children('.select_state').val();
-        const command_id = $(this).parent().parent().attr('id');
+        const current_command_div = $(this).parent().parent();
+        const command_id = current_command_div.attr('id');
+        const command_email = current_command_div.attr('email');
         const data = {
             new_state,
-            command_id
+            command_id,
+            command_email
         };
 
         if(new_state === 'declined'){

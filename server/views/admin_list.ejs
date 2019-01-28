@@ -10,10 +10,10 @@
     <h1>Liste Des demandes</h1>
     <!--<p><%= JSON.stringify(commands) %></p>-->
     <% for(c in commands) {%>
-    <!-- <p>
+    <p>
         <%=JSON.stringify(commands[c])%>
-    </p> -->
-    <div class="command" id="<%=commands[c]['id']%>">
+    </p>
+    <div class="command" id="<%=commands[c]['id']%>" email="<%=commands[c]['email']%>">
         <b>Type de SOS:
             <%=commands[c]['sos_type']%></b>
         <p>Adresse de livraison:
@@ -29,7 +29,7 @@
         <p>ID de la commande :
             <%=commands[c]['id']%>
         </p>
-        <!-- todo: translate state -->
+        <!-- TODO: translate state -->
         <p class="command_state">Etat de la commande : <%=commands[c]['state']%></p>
         <div class="change_state">
             Changer l'état :

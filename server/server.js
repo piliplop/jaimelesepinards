@@ -5,10 +5,14 @@ const uuidv1 = require("uuidv1");
 var shortid = require('shortid');
 const nodemailer = require('nodemailer');
 const request = require('request');
+const sha256 = require('crypto-js/sha256');
+const helmet = require('helmet');
+
+app.use(helmet());
 
 const CAPTCHA_SECRET = '6LfvHo0UAAAAAAJkQCBbiZPfoX597UyOrNko3tlx';
 
-// todo : change auth
+// TODO: change auth
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -45,6 +49,15 @@ app.use(function (req, res, next) {
   next();
 });
 
+// app.use((req, res, next) => {
+//   let new_query = Object.keys(req.query).reduce((acc, v) => {
+//     acc[v] = 'iiii'
+//   }, {})
+//   console.log(new_query)
+//   console.log(req);
+//   next();
+// })
+
 app.get("/pages", (req, res) => {
   res.redirect("/pages/commande");
 });
@@ -59,14 +72,23 @@ app.get("/pages/suivi/:token", (req, res) => {
     (err, quer_res) => {
       if (err) console.error(err);
       else {
-        console.log(quer_res.rows);
-        res.render("suivi.ejs", { rows: quer_res.rows[0] });
+        // console.log(quer_res.rows);
+        // console.log(['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email'].reduce((acc, val) => {
+        //   acc[val] = quer_res.rows[0][val];
+        //   return acc;
+        // }, {}))
+        const rows = ['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email', 'delivery_adress'].reduce((acc, val) => {
+          acc[val] = quer_res.rows[0][val];
+          return acc;
+        }, {});
+        console.log(quer_res.rows[0]);
+        res.render("suivi.ejs", { rows });
       }
     }
   );
 });
 
-// todo?: take care of each page separately to allow creating admin views
+// TODO:?: take care of each page separately to allow creating admin views
 // app.get("/pages/:title", (req, res) => {
 //   // res.sendFile('client/pages/' + req.params.title + '.html', project_root);
 //   res.render(req.params.title + ".ejs");
@@ -82,7 +104,7 @@ app.get('/pages/admin', (req, res) => {
 
 app.get('/pages/admin/:page', (req, res) => {
   cookies = parseCookies(req.headers.cookie)
-  // todo: fonction de vérification middleware ?
+  // TODO: fonction de vérification middleware ?
   if (typeof (cookies['auth_token']) !== 'undefined') {
     let query = `select * from admin_tokens where token like '${cookies['auth_token']}'`;
     db_client.query(query, (err, res_db) => {
@@ -95,7 +117,7 @@ app.get('/pages/admin/:page', (req, res) => {
           res.render('admin_' + req.params.page + '.ejs', { commands: res_db.rows })
         })
       } else {
-        // todo: destruction du cookie
+        // TODO: destruction du cookie
         res.end('erreur d\'authentification')
       }
     })
@@ -125,7 +147,6 @@ db_client.query('select id from commandes', (err, res) => {
   }));
 })
 
-//todo champ bdd en autoincrement
 app.get("/submit_command", (req, res) => {
   let params = req.query;
   // console.log(params.captcha_token)
@@ -134,7 +155,7 @@ app.get("/submit_command", (req, res) => {
   // }
   console.log(params);
   let captcha_result = 'unsettt';
-  //todo : verify params['g-recaptcha-response-100000'] exists
+  //TODO: verify params['g-recaptcha-response-100000'] exists
   const verification_url = `https://www.google.com/recaptcha/api/siteverify?secret=${CAPTCHA_SECRET}&response=${params.captcha_response}`;
   request(verification_url, (err, res_captcha, body) => {
     if (err) console.error(err);
@@ -148,27 +169,28 @@ app.get("/submit_command", (req, res) => {
         });
       } else {
         captcha_result = 'Successful captcha verification !';
+        
+        // TODO: change id, treat sql injections
+        // const id = uuidv1();
+        // const id = ++MAX_ID;
+        const id = shortid.generate();
 
         if (params.email_choice !== '') {
           const mail_params = {
             // from: "Foo from jul@bar.com <donotreply@bar.com>",
             to: params.email_choice,
             subject: "ta nouvelle commande",
-            // todo : change adress
+            // TODO: change adress
             text: "tu viens de commander un sos de type " + params.sos_choice + "\n\npour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
           };
 
           transporter.sendMail(mail_params, (err, info) => {
             if (err) console.error(err);
             else console.log('mail sent ! ' + info.response);
-          })
+          });
         }
 
-        // todo: change id, treat sql injections
-        // const id = uuidv1();
-        const id = shortid.generate();
-        // const id = ++MAX_ID;
-        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, delivery_date, state, email) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', '${params.date_choice}', 'waiting', '${params.email_choice}')`;
+        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', 'waiting', '${params.email_choice}')`;
         console.log(query);
         db_client.query(query, (err, res) => {
           if (err) console.log(err);
@@ -186,11 +208,13 @@ app.get("/submit_command", (req, res) => {
   })
 });
 
-// todo: XSS and SQL injections protection
-// todo: use hash for password
+// TODO: XSS and SQL injections protection
+// TODO: use hash for password
 app.get('/submit_admin_password', (req, res) => {
   // req.query.password
-  const password_query = `select * from authentification where password like '${req.query.password}'`;
+  // console.log(sha256(req.query.password).toString())
+  // TODO: stronger password
+  const password_query = `select * from authentification where hash like '${sha256(req.query.password).toString()}'`;
   db_client.query(password_query, (err, res_db) => {
     if (err) console.log(err);
     console.log(res_db.rows)
@@ -208,16 +232,26 @@ app.get('/submit_admin_password', (req, res) => {
 });
 
 app.get('/change_command_state', (req, res) => {
-  // console.log(req.query);
-  // todo: check that req.query.new_state is valid
-  // for (i in req.query) {
-  //   req.query[i] = req.query[i].replace(/'/g, "''");
-  // }
   const decline_reason = typeof (req.query.reason) === 'undefined' ? '' : req.query.reason;
   const query = `update commandes set state = '${req.query.new_state}', decline_reason = '${decline_reason}' where id like '${req.query.command_id}'`;
+  console.log(req.query);
   db_client.query(query, (err, res_db) => {
     if (err) console.error(err);
     res.end('')
+    if(req.query.command_email){
+      const mail_params = {
+        // from: "Foo from jul@bar.com <donotreply@bar.com>",
+        to: req.query.command_email,
+        subject: "Mise à jour de ta commande",
+        // TODO: change adress
+        text: "Un koh'steau ou une koh'lette a modifié l'état de ta commande. son nouvel état est " + req.query.new_state,
+      };
+
+      transporter.sendMail(mail_params, (err, info) => {
+        if (err) console.error(err);
+        else console.log('mail sent ! ' + info.response);
+      })
+    }
   });
 });
 
@@ -231,11 +265,16 @@ app.get('/get_command', (req, res) => {
         res.json({
           id: res_db.rows[0]['id'],
           sos_type: res_db.rows[0]['sos_type']
-        })
+        });
       }
     }
-  })
+  });
+});
+
+app.get('*', (req, res) => {
+  res.render('404.ejs');
 })
+
 
 /**
  * @param {string} query

@@ -1,12 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Commande de SOS</title>
     <link rel="stylesheet" href="/css/example.css">
     <!-- <script src='https://www.google.com/recaptcha/api.js?render=6LeHFo0UAAAAAFVuf_s4i2PMudRgzpju2HWoXKUJ'></script> -->
     <script src='https://www.google.com/recaptcha/api.js'></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+        crossorigin="anonymous">
 </head>
+
 <body>
+    <nav class="navbar navbar-default" role="navigation">
+        <a class="navbar-brand" href="#">Mon site Web</a>
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Rubrique 1</a></li>
+            <li><a href="#">Rubrique 2</a></li>
+        </ul>
+
+    </nav>
     <h1 id="main_title">Immulistés</h1>
     <div class="header">
         <p>Si tu ne vois pas ta commande, check tes mails</p>
@@ -21,33 +34,39 @@
     <h1>Commande de SOS</h1>
     <div id="command_block">
         <div class="block" id="div_sos_choice">
-            <p>Choisis ton SOS</p>  
+            <p>Choisis ton SOS</p>
             <select id="sos_choice">
                 <option>SOS 1</option>
                 <option>SOS 2</option>
                 <option>...</option>
             </select>
         </div>
-        <div class="block"  id="div_date_choice">
-            <p>Choisis la date et l'heure de livraison</p>
-            <input id="date_choice" type="date">
-            <input id="time_choice" type="time">
+        <div class="block" id="div_date_choice">
+            <p>Choisis l'heure de livraison idéale</p>
+            <!-- <input id="date_choice" type="date"> -->
+            <input id="time_choice" type="time" max="23:59" min="00:00">
         </div>
-        <div class="block"  id="div_adress">
+        <div class="block" id="div_adress">
             <p>Choisis l'adresse de livraison</p>
             <input id="adress_choice" type="text">
         </div>
-        <div class="block"  id="div_email">
+        <div class="block" id="div_email">
             <p>entre ton email pour suivre facilement ta commande</p>
             <input type="text" placeholder="exemple@mail.com" id="email_choice">
         </div>
-        <div class="block"  id="div_additionnal_informations">
+        <div class="block" id="div_additionnal_informations">
             <p>Autre chose chef ?</p>
             <textarea id="additionnal_informations" placeholder="informations complémentaires"></textarea>
         </div>
     </div>
     <div class="g-recaptcha" data-sitekey="6LfvHo0UAAAAAD7ZorJPRnsYk8ZQuGFLNvF962cz"></div>
     <input id="submit" type="button" value="valider">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="/js/jquery.cookie.js"></script>

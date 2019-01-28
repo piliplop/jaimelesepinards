@@ -53,10 +53,32 @@ $(() => {
                                     $.get({
                                         url: '/pages/suivi/' + v.id,
                                         success: d => {
-                                            // console.log(d.replace(/(\r\n\t|\n|\r\t)/gm, "").match(/<body>.*<\/body>/)[0])
                                             // remove spaces then capture the body tag
                                             $('#tracking_informations').html(d.replace(/(\r\n\t|\n|\r\t)/gm, "").match(/<body>.*<\/body>/)[0])
                                             this.already_shown = true
+                                            console.log(v);
+                                            $('#tracking_informations').append(
+                                                $('<div></div>')
+                                                    .append(
+                                                        $('<input>')
+                                                            .attr('type', 'button')
+                                                            .val('Ne plus voir cette commande')
+                                                            .click(() => {
+                                                                // remove the cookie
+                                                                command_tokens = JSON.parse($.cookie('command_tokens'));
+                                                                for (let i = 0; i < command_tokens.tokens.length; i++) {
+                                                                    if (command_tokens.tokens[i].id === v.id) {
+                                                                        command_tokens.tokens.splice(i, 1)
+                                                                    }
+                                                                }
+                                                                command_tokens = JSON.stringify(command_tokens);
+                                                                $.cookie('command_tokens', command_tokens);
+
+                                                                // update shown links
+                                                                updateTrackLinks()
+                                                            })
+                                                    )
+                                            )
                                         },
                                         error: err => {
                                             $('#tracking_informations').append(

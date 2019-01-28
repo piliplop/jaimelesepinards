@@ -1,5 +1,5 @@
 $(() => {
-    if(typeof($.cookie('auth_token')) !== 'undefined') {
+    if (typeof ($.cookie('auth_token')) !== 'undefined') {
         $.get({
             url: '/'
         })
@@ -14,8 +14,11 @@ $(() => {
                 password: $('#password_input').val()
             },
             success: (data => {
-                //todo : limited cookie time
-                $.cookie('auth_token', data.token)
+                //TODO: limited cookie time
+                const date = new Date();
+                const minutes = 15;
+                date.setTime(date.getTime() + (minutes * 60 * 1000));
+                $.cookie('auth_token', data.token, { expires: date })
                 console.log($.cookie('auth_token'))
                 location.reload()
             })
