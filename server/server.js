@@ -12,12 +12,11 @@ app.use(helmet());
 
 const CAPTCHA_SECRET = '6LfvHo0UAAAAAAJkQCBbiZPfoX597UyOrNko3tlx';
 
-// TODO: change auth
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'noreply.immulistes@gmail.com',
-    pass: 'immulistes2k19'
+    pass: 'T8kBcyhboSLJAYtvLZzN'
   }
 })
 
@@ -90,12 +89,6 @@ app.get("/pages/suivi/:token", (req, res) => {
   );
 });
 
-// TODO:?: take care of each page separately to allow creating admin views
-// app.get("/pages/:title", (req, res) => {
-//   // res.sendFile('client/pages/' + req.params.title + '.html', project_root);
-//   res.render(req.params.title + ".ejs");
-// });
-
 app.get('/pages/commande', (req, res) => {
   res.render('commande.ejs');
 })
@@ -118,7 +111,6 @@ app.get('/pages/admin/:page', (req, res) => {
           res.render('admin_' + req.params.page + '.ejs', { commands: res_db.rows })
         })
       } else {
-        // TODO: destruction du cookie
         res.end('erreur d\'authentification')
       }
     });
@@ -156,7 +148,6 @@ app.get("/submit_command", (req, res) => {
   // }
   console.log(params);
   let captcha_result;
-  //TODO: verify params['g-recaptcha-response-100000'] exists
   const verification_url = `https://www.google.com/recaptcha/api/siteverify?secret=${CAPTCHA_SECRET}&response=${params.captcha_response}`;
   request(verification_url, (err, res_captcha, body) => {
     if (err) console.error(err);
@@ -170,10 +161,7 @@ app.get("/submit_command", (req, res) => {
         });
       } else {
         captcha_result = 'Successful captcha verification !';
-
-        // TODO: change id, treat sql injections
-        // const id = uuidv1();
-        // const id = ++MAX_ID;
+        
         const id = shortid.generate();
 
         if (params.email_choice !== '') {
@@ -181,7 +169,6 @@ app.get("/submit_command", (req, res) => {
             // from: "Foo from jul@bar.com <donotreply@bar.com>",
             to: params.email_choice,
             subject: "ta nouvelle commande",
-            // TODO: change adress
             text: "tu viens de commander un sos de type " + params.sos_choice + "\n\npour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
           };
 
@@ -253,10 +240,8 @@ app.get('/change_command_state', (req, res) => {
     res.end('')
     if (req.query.command_email) {
       const mail_params = {
-        // from: "Foo from jul@bar.com <donotreply@bar.com>",
         to: req.query.command_email,
         subject: "Mise à jour de ta commande",
-        // TODO: change adress
         text: "Un koh'steau ou une koh'lette a modifié l'état de ta commande. son nouvel état est " + req.query.new_state + "\nPour la voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + req.query.command_id,
       };
 

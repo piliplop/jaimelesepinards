@@ -14,7 +14,6 @@ $(() => {
                 password: $('#password_input').val()
             },
             success: (data => {
-                //TODO: limited cookie time
                 const date = new Date();
                 const minutes = 15;
                 date.setTime(date.getTime() + (minutes * 60 * 1000));
