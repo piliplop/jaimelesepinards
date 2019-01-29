@@ -68,16 +68,18 @@ app.get("/", (req, res) => {
 
 app.get("/pages/suivi/:token", (req, res) => {
   db_client.query(
-    `select * from commandes where id like '${req.params.token}'`,
+    `select * from commandes where id like $1`,
+    [req.params.token],
     (err, quer_res) => {
       if (err) console.error(err);
+      else if (quer_res.rows.length === 0) return;
       else {
         // console.log(quer_res.rows);
         // console.log(['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email'].reduce((acc, val) => {
         //   acc[val] = quer_res.rows[0][val];
         //   return acc;
         // }, {}))
-        const rows = ['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email', 'delivery_adress'].reduce((acc, val) => {
+        const rows = ['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email', 'delivery_adress', 'amount'].reduce((acc, val) => {
           acc[val] = quer_res.rows[0][val];
           return acc;
         }, {});
@@ -103,11 +105,10 @@ app.get('/pages/admin', (req, res) => {
 })
 
 app.get('/pages/admin/:page', (req, res) => {
-  cookies = parseCookies(req.headers.cookie)
-  // TODO: fonction de vérification middleware ?
+  cookies = parseCookies(req.headers.cookie);
   if (typeof (cookies['auth_token']) !== 'undefined') {
-    let query = `select * from admin_tokens where token like '${cookies['auth_token']}'`;
-    db_client.query(query, (err, res_db) => {
+    let query = `select * from admin_tokens where token like $1`;
+    db_client.query(query, [cookies['auth_token']], (err, res_db) => {
       if (err) console.error(err);
       if (res_db.rows.length > 0) {
         query = `select * from commandes`;
@@ -120,13 +121,13 @@ app.get('/pages/admin/:page', (req, res) => {
         // TODO: destruction du cookie
         res.end('erreur d\'authentification')
       }
-    })
+    });
     //temp
     // res.end();
   } else {
     res.render('admin_login.ejs')
   }
-})
+});
 
 app.get("/js/:file", (req, res) => {
   res.sendFile("js_front/" + req.params.file, project_root);
@@ -154,7 +155,7 @@ app.get("/submit_command", (req, res) => {
   //   params[i] = params[i].replace(/'/g, "''");
   // }
   console.log(params);
-  let captcha_result = 'unsettt';
+  let captcha_result;
   //TODO: verify params['g-recaptcha-response-100000'] exists
   const verification_url = `https://www.google.com/recaptcha/api/siteverify?secret=${CAPTCHA_SECRET}&response=${params.captcha_response}`;
   request(verification_url, (err, res_captcha, body) => {
@@ -169,7 +170,7 @@ app.get("/submit_command", (req, res) => {
         });
       } else {
         captcha_result = 'Successful captcha verification !';
-        
+
         // TODO: change id, treat sql injections
         // const id = uuidv1();
         // const id = ++MAX_ID;
@@ -190,12 +191,22 @@ app.get("/submit_command", (req, res) => {
           });
         }
 
-        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email) values ('${id}', '${params.sos_choice}', '${params.time_choice}', '${params.adress_choice}', '${params.additionnal_informations}', 'waiting', '${params.email_choice}')`;
+        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email, amount) values ($1, $2, $3, $4, $5, 'waiting', $6, $7)`;
         console.log(query);
-        db_client.query(query, (err, res) => {
-          if (err) console.log(err);
-          // db_client.end();
-        });
+        db_client.query(query,
+          [
+            id,
+            params.sos_choice,
+            params.time_choice,
+            params.adress_choice,
+            params.additionnal_informations,
+            params.email_choice,
+            params.amount_choice
+          ],
+          (err, res) => {
+            if (err) console.log(err);
+            // db_client.end();
+          });
 
         res.json({
           id,
@@ -208,14 +219,12 @@ app.get("/submit_command", (req, res) => {
   })
 });
 
-// TODO: XSS and SQL injections protection
-// TODO: use hash for password
 app.get('/submit_admin_password', (req, res) => {
   // req.query.password
-  // console.log(sha256(req.query.password).toString())
+  console.log(sha256(req.query.password).toString())
   // TODO: stronger password
-  const password_query = `select * from authentification where hash like '${sha256(req.query.password).toString()}'`;
-  db_client.query(password_query, (err, res_db) => {
+  const password_query = `select * from authentification where hash like $1`;
+  db_client.query(password_query, [sha256(req.query.password).toString()], (err, res_db) => {
     if (err) console.log(err);
     console.log(res_db.rows)
     if (res_db.rows.length === 1) {
@@ -233,18 +242,22 @@ app.get('/submit_admin_password', (req, res) => {
 
 app.get('/change_command_state', (req, res) => {
   const decline_reason = typeof (req.query.reason) === 'undefined' ? '' : req.query.reason;
-  const query = `update commandes set state = '${req.query.new_state}', decline_reason = '${decline_reason}' where id like '${req.query.command_id}'`;
-  console.log(req.query);
-  db_client.query(query, (err, res_db) => {
+  const query = `update commandes set state = $1, decline_reason = $2 where id like $3`;
+  // console.log(req.query);
+  db_client.query(query, [
+    req.query.new_state,
+    decline_reason,
+    req.query.command_id
+  ], (err, res_db) => {
     if (err) console.error(err);
     res.end('')
-    if(req.query.command_email){
+    if (req.query.command_email) {
       const mail_params = {
         // from: "Foo from jul@bar.com <donotreply@bar.com>",
         to: req.query.command_email,
         subject: "Mise à jour de ta commande",
         // TODO: change adress
-        text: "Un koh'steau ou une koh'lette a modifié l'état de ta commande. son nouvel état est " + req.query.new_state,
+        text: "Un koh'steau ou une koh'lette a modifié l'état de ta commande. son nouvel état est " + req.query.new_state + "\nPour la voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + req.query.command_id,
       };
 
       transporter.sendMail(mail_params, (err, info) => {
@@ -256,8 +269,8 @@ app.get('/change_command_state', (req, res) => {
 });
 
 app.get('/get_command', (req, res) => {
-  const query = `select * from commandes where id like '${req.query.id}'`;
-  db_client.query(query, (err, res_db) => {
+  const query = `select * from commandes where id like $1`;
+  db_client.query(query, [req.query.id], (err, res_db) => {
     if (err) console.error(err);
     else {
       // console.log(res_db.rows)

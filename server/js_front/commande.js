@@ -5,11 +5,23 @@ $(() => {
     function initPage() {
         // $.removeCookie('command_tokens')
         console.log(new URL(window.location.href).searchParams.get('add_sos'));
+
+        initNavBar();
+        updateTrackLinks();
+        
         const new_sos_id = new URL(window.location.href).searchParams.get('add_sos');
         if (new_sos_id) {
             addToListedCommands(new_sos_id, true);
         }
         updateTrackLinks();
+    }
+
+    function initNavBar() {
+        $(document).ready( () => {
+            console.log("hihi init");
+            $('.sidenav').sidenav();
+
+        });
     }
 
     function getInputData() {
@@ -33,12 +45,13 @@ $(() => {
         )
 
         JSON.parse($.cookie('command_tokens')).tokens.forEach(v => {
-            // console.log(v)
+            console.log(v)
             $('#tracking_links')
                 .append($('<div></div')
                     .attr('class', 'sos_link')
                     .append(
                         $('<a></a>')
+                            .attr('id', v.id)
                             .attr('class', 'tracking_link')
                             .text(v.sos_type)
                             // .attr('href', '/pages/suivi/' + v.id)
@@ -199,14 +212,18 @@ $(() => {
                     }
                     updateTrackLinks();
                     if (reload_page) {
-                        window.location.replace('/');
+                        // window.location.replace('/');
+                        // window.history.pushState({}, "", "/pages/commande");
                     }
+                    // console.log($('#'+new_id))
                 }
             });
         }
         else {
             alert('Cette commande est déjà listée');
         }
+        window.history.pushState({}, "", "/pages/commande");
+        $('#'+new_id).click();
     }
 
 });
