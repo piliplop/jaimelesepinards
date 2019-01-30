@@ -52,8 +52,8 @@
         <div class="col s21">
             <div id="command_block">
                 <div class="block input-field col s12" id="div_sos_choice">
-                    <p>Ton SOS : </p>
-                    <select id="sos_choice">
+                    <label for="sos_choice" class="required">Ton SOS : </label>
+                    <select name="sos_choice" id="sos_choice" class="required">
                         <option value="" disabled selected>Choisis ton SOS</option>
                         <option>SOS 1</option>
                         <option>SOS 2</option>
@@ -61,25 +61,29 @@
                     </select>
                 </div>
                 <div class="block input-field col s12" id="div_amount_choice">
-                    <p>La quantité :</p>
-                    <input type="number" id="amount_choice">
+                    <label for="amount_choice">La quantité :</label>
+                    <input type="number" name="amount_choice" id="amount_choice">
                 </div>
                 <div class="block" id="div_date_choice">
-                    <p>Choisis l'heure de livraison idéale</p>
+                    <label for="time_choice">Choisis l'heure de livraison idéale</label>
                     <!-- <input id="date_choice" type="date"> -->
-                    <input id="time_choice" type="time" max="23:59" min="00:00">
+                    <input name="time_choice" id="time_choice" type="time" max="23:59" min="00:00">
                 </div>
                 <div class="block" id="div_adress">
-                    <p>Choisis l'adresse de livraison</p>
-                    <input id="adress_choice" type="text">
+                    <label for="adress_choice" class="required">Choisis l'adresse de livraison</label>
+                    <input name="adress_choice" id="adress_choice" type="text" class="required">
                 </div>
                 <div class="input-field" id="div_email">
-                    <p>entre ton email pour suivre facilement ta commande</p>
-                    <input type="email" class="validate" placeholder="exemple@mail.com" id="email_choice">
+                    <label for="email_choice">entre ton email pour suivre facilement ta commande</label>
+                    <input type="email" class="validate" placeholder="exemple@mail.com" id="email_choice" name="email_choice">
+                </div>
+                <div class="input-field" id="div_phone">
+                    <label for="phone_choice" class="required">Donne ton tel pour qu'on puisse te joindre</label>
+                    <input type="text" placeholder="06XXXXXXXX" name="phone_choice" id="phone_choice" class="required">
                 </div>
                 <div class="block" id="div_additionnal_informations">
-                    <p>Autre chose chef ?</p>
-                    <textarea id="additionnal_informations" placeholder="informations complémentaires"></textarea>
+                    <label for="additionnal_informations">Autre chose chef ?</label>
+                    <textarea name="additionnal_informations" id="additionnal_informations" placeholder="informations complémentaires"></textarea>
                 </div>
             </div>
 

@@ -10,9 +10,7 @@
     <h1>Liste Des demandes</h1>
     <!--<p><%= JSON.stringify(commands) %></p>-->
     <% for(c in commands) {%>
-    <!-- <p>
-        <%=JSON.stringify(commands[c])%>
-    </p> -->
+    <!-- <p><%=JSON.stringify(commands[c])%></p> -->
     <div class="command" id="<%=commands[c]['id']%>" email="<%=commands[c]['email']%>">
         <b>Type de SOS:
             <%=commands[c]['sos_type']%></b>
@@ -20,6 +18,7 @@
         <p>Adresse de livraison:
             <%=commands[c]['delivery_adress']%>
         </p>
+        <p>Numéro de téléphone : <%= commands[c]['phone'];%></p>
         <p>Heure demandée : <%=commands[c]['delivery_hour']%></p>
         <p>Informations additionnelles :
             <%=commands[c]['additional_informations']%>

@@ -48,6 +48,11 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.use((req, res, next) => {
+  console.log('\tCALL :', req.url);
+  next();
+})
+
 // app.use((req, res, next) => {
 //   let new_query = Object.keys(req.query).reduce((acc, v) => {
 //     acc[v] = 'iiii'
@@ -142,11 +147,29 @@ db_client.query('select id from commandes', (err, res) => {
 
 app.get("/submit_command", (req, res) => {
   let params = req.query;
-  // console.log(params.captcha_token)
-  // for (i in params) {
-  //   params[i] = params[i].replace(/'/g, "''");
-  // }
-  console.log(params);
+  // input format check
+  const wrong_inputs = checkInputFormats(params);
+  if(wrong_inputs.length !== 0) {
+    return res.json({
+      wrong_inputs,
+    });
+  }
+
+  //required inputs check
+  const required_inputs = [
+    'sos_choice',
+    'adress_choice',
+    'phone_choice',
+  ]
+
+  const unfilled_required = required_inputs.reduce((acc, v) => (params[v] === undefined || params[v] === '' ? [...acc, v] : acc), []);
+  if (unfilled_required.length !== 0) {
+    return res.json({
+      missing: unfilled_required,
+    });
+  }
+
+  // console.log(params);
   let captcha_result;
   const verification_url = `https://www.google.com/recaptcha/api/siteverify?secret=${CAPTCHA_SECRET}&response=${params.captcha_response}`;
   request(verification_url, (err, res_captcha, body) => {
@@ -161,7 +184,7 @@ app.get("/submit_command", (req, res) => {
         });
       } else {
         captcha_result = 'Successful captcha verification !';
-        
+
         const id = shortid.generate();
 
         if (params.email_choice !== '') {
@@ -178,8 +201,10 @@ app.get("/submit_command", (req, res) => {
           });
         }
 
-        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email, amount) values ($1, $2, $3, $4, $5, 'waiting', $6, $7)`;
-        console.log(query);
+        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email, amount, phone) values ($1, $2, $3, $4, $5, 'waiting', $6, $7::numeric, $8)`;
+
+        // console.log(query);
+        // console.log(params);
         db_client.query(query,
           [
             id,
@@ -188,7 +213,8 @@ app.get("/submit_command", (req, res) => {
             params.adress_choice,
             params.additionnal_informations,
             params.email_choice,
-            params.amount_choice
+            params.amount_choice === '' ? null : parseInt(params.amount_choice),
+            params.phone_choice
           ],
           (err, res) => {
             if (err) console.log(err);
@@ -301,4 +327,36 @@ function parseCookies(cookies) {
     res[sv[0]] = sv[1];
   });
   return res;
+}
+
+function checkInputFormats(inputs) {
+  console.log(inputs)
+  return Object.keys(inputs).reduce((acc, k) => {
+    // console.log('val :', k)
+    if (inputs[k] !== undefined) {
+      switch (k) {
+        case 'amount_choice':
+          // console.log('typeof :', inputs[k] === '')
+          if (/^\d+$/.test(inputs[k]) || inputs[k] === '') return acc;
+          else return [...acc, k]
+          break;
+
+        case 'email_choice':
+          const email_regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          if (email_regex.test(inputs[k]) || inputs[k] === '') return acc;
+          else return [...acc, k];
+          break;
+
+        case 'phone_choice':
+          const phone_regex = /^(?:(?:\+|00)33[\s.-]{0,3}(?:\(0\)[\s.-]{0,3})?|0)[1-9](?:(?:[\s.-]?\d{2}){4}|\d{2}(?:[\s.-]?\d{3}){2})$/;
+          if(phone_regex.test(inputs[k]) || inputs[k] === '') return acc;
+          else return [...acc, k];
+          break;
+
+        default:
+          return acc;
+          break;
+      }
+    }
+  }, []);
 }

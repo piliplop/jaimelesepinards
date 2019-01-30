@@ -8,7 +8,7 @@ $(() => {
 
         initNavBar();
         updateTrackLinks();
-        
+
         const new_sos_id = new URL(window.location.href).searchParams.get('add_sos');
         if (new_sos_id) {
             addToListedCommands(new_sos_id, true);
@@ -17,8 +17,7 @@ $(() => {
     }
 
     function initNavBar() {
-        $(document).ready( () => {
-            console.log("hihi init");
+        $(document).ready(() => {
             $('.sidenav').sidenav();
 
         });
@@ -134,9 +133,6 @@ $(() => {
     }
 
     $('#submit').click(() => {
-        // grecaptcha.ready(function () {
-        //     grecaptcha.execute('6LeHFo0UAAAAAFVuf_s4i2PMudRgzpju2HWoXKUJ', { action: 'command' })
-        //         .then(function (captcha_token) {
 
         const captcha_response = grecaptcha.getResponse()
         const data = {
@@ -149,26 +145,34 @@ $(() => {
             url: '/submit_command',
             data,
             success: function (d) {
-                if (!d.captcha_failed) {
-                    grecaptcha.reset();
-                    // alert(`l'id de ta commande est : ${d.id}`)
-                    let command_tokens = $.cookie('command_tokens');
-                    // console.log(typeof(command_tokens) === 'undefined')
-                    // console.log(JSON.stringify(JSON.parse(command_tokens).tokens.push(d.id)))
-                    if (typeof (command_tokens) === 'undefined') {
-                        $.cookie('command_tokens', JSON.stringify({ tokens: [{ id: d.id, sos_type: data.sos_choice }] }))
-                    }
-                    else {
-                        command_tokens = JSON.parse(command_tokens);
-                        command_tokens.tokens.push({ id: d.id, sos_type: data.sos_choice });
-                        command_tokens = JSON.stringify(command_tokens);
-                        $.cookie('command_tokens', command_tokens);
-                    }
-                    updateTrackLinks();
-                    if (data.email_choice !== '') {
-                        alert('Ton SOS est en attente d\'acceptation\non t\'a envoyé un mail au cas ou tu ne le voies plus sur cette page');
+                console.log(d.captcha_failed);
+                if (d.captcha_failed === false || d.captcha_failed === undefined) {
+                    if (d.missing) {
+                        // TODO: show missing required fields
+                        alert('Tu as oublié des champs requis');
+                    } else if(d.wrong_inputs){
+                        alert("Tu t'es trompé sur le format de certaines de tes entrées")
                     } else {
-                        // alert('Ton SOS est en attente d\'acceptation');
+                        grecaptcha.reset();
+                        // alert(`l'id de ta commande est : ${d.id}`)
+                        let command_tokens = $.cookie('command_tokens');
+                        // console.log(typeof(command_tokens) === 'undefined')
+                        // console.log(JSON.stringify(JSON.parse(command_tokens).tokens.push(d.id)))
+                        if (typeof (command_tokens) === 'undefined') {
+                            $.cookie('command_tokens', JSON.stringify({ tokens: [{ id: d.id, sos_type: data.sos_choice }] }))
+                        }
+                        else {
+                            command_tokens = JSON.parse(command_tokens);
+                            command_tokens.tokens.push({ id: d.id, sos_type: data.sos_choice });
+                            command_tokens = JSON.stringify(command_tokens);
+                            $.cookie('command_tokens', command_tokens);
+                        }
+                        updateTrackLinks();
+                        if (data.email_choice !== '') {
+                            alert('Ton SOS est en attente d\'acceptation\non t\'a envoyé un mail au cas ou tu ne le voies plus sur cette page');
+                        } else {
+                            // alert('Ton SOS est en attente d\'acceptation');
+                        }
                     }
                 } else {
                     alert("Tu n'as pas correctement rempli le captcha")
@@ -178,7 +182,8 @@ $(() => {
         // });
         // });
 
-    })
+    });
+
     $('#submit_command_id').click(() => {
         const new_id = $('#input_command_id').val();
         addToListedCommands(new_id);
@@ -223,8 +228,17 @@ $(() => {
             alert('Cette commande est déjà listée');
         }
         window.history.pushState({}, "", "/pages/commande");
-        $('#'+new_id).click();
+        $('#' + new_id).click();
     }
+
+    // function requiredInputsFilled() {
+    //     // console.log(Object.keys($('.required')))
+    //     let all_filled = true;
+    //     $('.required').each(function () {
+    //         if($(this).val() === '') all_filled = false;
+    //     })
+    //     return all_filled;
+    // }
 
 });
 
