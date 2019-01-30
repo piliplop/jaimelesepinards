@@ -150,7 +150,8 @@ $(() => {
                     if (d.missing) {
                         // TODO: show missing required fields
                         alert('Tu as oublié des champs requis');
-                    } else if(d.wrong_inputs){
+                    } else if(d.wrong_inputs) {
+                        //TODO: show wrong fields
                         alert("Tu t'es trompé sur le format de certaines de tes entrées")
                     } else {
                         grecaptcha.reset();
