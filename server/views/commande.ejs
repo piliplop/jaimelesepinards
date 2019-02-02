@@ -7,103 +7,123 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!--Import materialize.css-->
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
-        crossorigin="anonymous">
+
 
     <!-- <script src='https://www.google.com/recaptcha/api.js?render=6LeHFo0UAAAAAFVuf_s4i2PMudRgzpju2HWoXKUJ'></script> -->
     <script src='https://www.google.com/recaptcha/api.js'></script>
-    <!-- <link type="text/css" rel="stylesheet" href="../css/materialize.css" media="screen,projection" /> -->
+    <link type="text/css" rel="stylesheet" href="../css/materialize.css" media="screen,projection" />
     <link rel="stylesheet" href="/css/example.css">
 
 
 </head>
 
 <body>
-    <nav>
-        <div class="nav-wrapper">
-            <a href="#!" data-target="mobile-menu" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-            <a href="#" class="brand-logo center main_title">Immulistés</a>
-            <ul class="left hide-on-med-and-down">
-                <li><a href="/pages/commande">Commander un SOS</a></li>
-                <li><a href="/pages/admin">Je suis un Koh</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <ul class="sidenav" id="mobile-menu">
-        <li><a href="/pages/commande">Commander un SOS</a></li>
-        <li><a href="/pages/admin">Je suis un Koh</a></li>
-    </ul>
+    <div class="content">
+        <header>
+                <% include ./header %>
+        </header>
+        <div class="container">
 
     <div class="header">
         <p>Si tu ne vois pas ta commande, check tes mails</p>
         <div id="tracking_links"></div>
-        <!-- <div>
-            <p>Tu ne vois pas ta commande ? ajoute-la avec son id :</p>
-            <input type="text" id="input_command_id">
-            <input type="button" id="submit_command_id" value="Valider">
-        </div> -->
         <div id="tracking_informations"></div>
     </div>
-    <h1>Commande de SOS</h1>
-          
     <!-- FORM is here -->
-    <div class="row">
-        <div class="col s21">
-            <div id="command_block">
-                <div class="block input-field col s12" id="div_sos_choice">
-                    <label for="sos_choice" class="required">Ton SOS : </label>
-                    <select name="sos_choice" id="sos_choice" class="required">
-                        <option value="" disabled selected>Choisis ton SOS</option>
-                        <option>SOS 1</option>
-                        <option>SOS 2</option>
-                        <option>...</option>
-                    </select>
+        <h1>Commande de SOS</h1>
+        <div class="row">
+            <div class="col s12">
+                <div id="command_block">
+                    <div class="row">
+                        <!-- <%=JSON.stringify(rows);%> -->
+                        <div class="block input-field col s6" id="div_sos_choice">
+                            <select name="sos_choice" id="sos_choice" class="required">
+                                <%for(let i in rows) {%>
+                                    <option value="<%=rows[i].short_name !== '' ? rows[i].short_name : rows[i].name%>"><%=rows[i].name%><%if(rows[i].cost){%>, Prix : <%=rows[i].cost%>€<%}%></option>
+                                <%}%>
+                            </select>
+                            <label>Ton SOS : </label>
+                        </div>
+                        <div class="block input-field col s6" id="div_amount_choice">
+                            <label for="amount_choice">La quantité :</label>
+                            <input type="number" name="amount_choice" id="amount_choice">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="block input-field col s12" id="div_date_choice">
+                            <p class="time_choice" for="time_choice">Choisis l'heure de livraison idéale</p>
+                            <input type="time" name="time_choice" id="time_choice">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="block input-field col s12" id="div_adress">
+                            <label for="adress_choice" class="required">Choisis l'adresse de livraison</label>
+                            <input name="adress_choice" id="adress_choice" type="text" class="required">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="block input-field col s6" id="div_email">
+                            <label for="email_choice">Entre ton email :</label>
+                            <input type="email" class="validate" placeholder="coline@mulistee.kohm" id="email_choice" name="email_choice">
+                        </div>
+                        <div class="input-field col s6" id="div_phone">
+                            <label for="phone_choice" class="required">Donne ton tel :</label>
+                            <input type="tel" placeholder="06XXXXXXXX" name="phone_choice" id="phone_choice" class="required">
+                        </div>
+                    </div>
+                    <div class="block" id="div_additionnal_informations">
+                        <label for="additionnal_informations">Autre chose chef ?</label>
+                        <textarea name="additionnal_informations" class="materialize-textarea" id="additionnal_informations"
+                            placeholder="informations complémentaires"></textarea>
+                    </div>
                 </div>
-                <div class="block input-field col s12" id="div_amount_choice">
-                    <label for="amount_choice">La quantité :</label>
-                    <input type="number" name="amount_choice" id="amount_choice">
-                </div>
-                <div class="block" id="div_date_choice">
-                    <label for="time_choice">Choisis l'heure de livraison idéale</label>
-                    <!-- <input id="date_choice" type="date"> -->
-                    <input name="time_choice" id="time_choice" type="time" max="23:59" min="00:00">
-                </div>
-                <div class="block" id="div_adress">
-                    <label for="adress_choice" class="required">Choisis l'adresse de livraison</label>
-                    <input name="adress_choice" id="adress_choice" type="text" class="required">
-                </div>
-                <div class="input-field" id="div_email">
-                    <label for="email_choice">entre ton email pour suivre facilement ta commande</label>
-                    <input type="email" class="validate" placeholder="exemple@mail.com" id="email_choice" name="email_choice">
-                </div>
-                <div class="input-field" id="div_phone">
-                    <label for="phone_choice" class="required">Donne ton tel pour qu'on puisse te joindre</label>
-                    <input type="text" placeholder="06XXXXXXXX" name="phone_choice" id="phone_choice" class="required">
-                </div>
-                <div class="block" id="div_additionnal_informations">
-                    <label for="additionnal_informations">Autre chose chef ?</label>
-                    <textarea name="additionnal_informations" id="additionnal_informations" placeholder="informations complémentaires"></textarea>
+                <div class="container">
+                    <div class="row">
+                        <div class="container">
+                            <center>
+                            <div class="g-recaptcha" data-sitekey="6LfvHo0UAAAAAD7ZorJPRnsYk8ZQuGFLNvF962cz"></div>
+                            </center>
+                        </div>
+                        <!-- TODO: check required fields -->
+                    </div>
+                    <div class="row" id="submit_div">
+                        <center>
+                            <input class="btn-large waves-effect waves-light" id="submit" type="button" value="Valider">
+                        </center>
+                    </div>
+                    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+                        crossorigin="anonymous"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+                        crossorigin="anonymous"></script>
+                    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+                        crossorigin="anonymous"></script>
+                    <script type="text/javascript" src="../js/materialize.js"></script>
                 </div>
             </div>
-
-            <div class="g-recaptcha" data-sitekey="6LfvHo0UAAAAAD7ZorJPRnsYk8ZQuGFLNvF962cz"></div>
-            <!-- TODO: check required fields -->
-            <input id="submit" type="button" value="valider">
-            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-                crossorigin="anonymous"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
-                crossorigin="anonymous"></script>
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
-                crossorigin="anonymous"></script>
-            <script type="text/javascript" src="../js/materialize.js"></script>
         </div>
     </div>
-
+    </div>
+    <div id="sos_list_div" display="none" style="display: none;"></div>
+</div>
+    <!-- footer -->
+    <div>
+            <% include ./footer %>
+    </div>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="/js/jquery.ba-throttle-debounce.js"></script>
+
 <script src="/js/jquery.cookie.js"></script>
 <script src="/js/commande.js"></script>
-<!-- <script src="/js/materialize.js"></script> -->
-
+<script src="/js/materialize.js"></script>
+<script src="/js/navbar.js"></script>
+<script src="/js/cookiechoices.js"></script>
+<!-- <script>document.addEventListener 
+    ('DOMContentLoaded', function(event) { cookieChoices.showCookieConsentBar 
+    ('Attention : Ce site n\'est pas optimisé pour Microsoft Edge ou Internet Explorer' ,
+    'Fermer', 'learn more', 'http://example.com'); });</script> -->
+<script>document.addEventListener('DOMContentLoaded', function(event){
+    cookieChoices.showCookieConsentBar('Attention : Ce site n′est pas optimisé pour Microsoft Edge ou Internet Explorer', 'Qui utilise ça ?', '', '');});
+</script>
 </html>
+ 

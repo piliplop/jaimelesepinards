@@ -1,4 +1,83 @@
+@font-face {
+    font-family: "SF Ironsides";
+    src: url("/fonts/SF Ironsides.ttf");
+
+    }
 label.required:after{
     content: " *";
     color: red;
 }
+
+.g-recaptcha {
+    transform-origin: left top;
+    -webkit-transform-origin: left top;
+  }
+
+.tracking_link:hover{
+    cursor:pointer;
+}
+ 
+#cookieChoiceDismiss{
+    background-color: #fcdd4c;
+    color: black;
+    border-radius: 4px;
+    padding-left:1%;
+    padding-right:1%;
+
+
+}
+.nav-wrapper {
+    background-color: #fcdd4c;
+}
+
+nav ul a {
+        color: black;
+
+}
+.container {
+    color: black;
+}
+.content{
+padding-bottom: 3%;
+}
+.sidenav{
+    background-color: #fcdd4c;
+    color: black;
+}
+.logo-img{
+    width: 150px;
+    height: 150px; 
+        background-color: transparent;
+        
+}
+.page-footer{
+    background-color: #fcdd4c;
+    color: black;
+    bottom: 0;
+    width: 100%;
+}
+#GRANDTITREFDP{
+    color: black;
+    font-family: "SF Ironsides";
+    font-size: 50px;
+
+}
+.btn-large {
+    background-color: #fcdd4c;
+    color: black;
+}
+.content {
+    min-height: calc(100vh - 200px);
+}
+#tracking_informations{
+    background-color: rgba(252, 218, 0, 0.486);
+    border-radius: 12px;
+}
+
+.time_choice{
+    color: #9e9e9e;
+    font-size: 0.8rem;
+}
+/* p {
+    margin :2px;
+} */

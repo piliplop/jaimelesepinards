@@ -3,31 +3,71 @@
 
 <head>
     <meta charset="utf-8" />
+    <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
+    <!--Import materialize.css-->
+
+
+
+    <!-- <script src='https://www.google.com/recaptcha/api.js?render=6LeHFo0UAAAAAFVuf_s4i2PMudRgzpju2HWoXKUJ'></script> -->
+    <!-- <script src='https://www.google.com/recaptcha/api.js'></script> -->
+    <!-- <link type="text/css" rel="stylesheet" href="../css/materialize.css" media="screen,projection" />
+    <link rel="stylesheet" href="/css/example.css"> -->
+
+    <link rel="stylesheet" href="/css/admin.css" />
     <title>Liste des commandes</title>
 </head>
 
 <body>
-    <h1>Liste Des demandes</h1>
+    <!-- <header>
+                <% include ./header %>
+        </header> -->
+
+    <div id="select_qg_div">
+        <label for="select_qg">Ici c'est </label>
+        <select id="select_qg" name="select_qg">
+            <option value="Chez Maxime">Chez Maxime</option>
+            <option value="Chez Jules">Chez Jules</option>
+            <!-- <option value="Chez Laura">Chez Laura</option> -->
+        </select>
+    </div>
+    <div id="toggle_archived_div">
+        <input type="button" id="toggle_archived" value="Afficher les koh'mmandes archivées ou refusées">
+    </div>
+    <hr>
+    <h1>Liste Des koh'mmandes</h1>
     <!--<p><%= JSON.stringify(commands) %></p>-->
     <% for(c in commands) {%>
     <!-- <p><%=JSON.stringify(commands[c])%></p> -->
-    <div class="command" id="<%=commands[c]['id']%>" email="<%=commands[c]['email']%>">
-        <b>Type de SOS:
+    <div class="command <%=commands[c]['state']%>" id="<%=commands[c]['id']%>" email="<%=commands[c]['email']%>">
+        <b>Type de SOS :
             <%=commands[c]['sos_type']%></b>
-        <p>Quantité : <%=commands[c]['amount']%></p>
+        <p>Quantité :
+            <%=commands[c]['amount']%>
+        </p>
         <p>Adresse de livraison:
             <%=commands[c]['delivery_adress']%>
         </p>
-        <p>Numéro de téléphone : <%= commands[c]['phone'];%></p>
-        <p>Heure demandée : <%=commands[c]['delivery_hour']%></p>
+        <p>Numéro de téléphone :
+            <%= commands[c]['phone'];%>
+        </p>
+        <p>Heure demandée :
+            <%=commands[c]['delivery_hour']%>
+        </p>
         <p>Informations additionnelles :
             <%=commands[c]['additional_informations']%>
         </p>
         <p>ID de la commande :
             <%=commands[c]['id']%>
         </p>
+        <%if(commands[c]['last_modif_qg']) {%>
+        <p>Dernier QG ayant modifié cette commande :
+            <%=commands[c]['last_modif_qg']%>
+        </p>
+        <%}%>
         <!-- TODO: translate state -->
-        <p class="command_state">Etat de la commande : <%=commands[c]['state']%></p>
+        <p class="command_state">Etat de la commande :
+            <%=commands[c]['state']%>
+        </p>
         <div class="change_state">
             Changer l'état :
             <select class="select_state">
@@ -44,7 +84,15 @@
         <hr>
     </div>
     <%}%>
+    <!-- footer -->
+    <div>
+        <!-- <% include ./footer %> -->
+    </div>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="/js/jquery.cookie.js"></script>
+<script src="/js/commande.js"></script>
 <script src="/js/admin_list.js"></script>
+<!-- <script src="/js/materialize.js"></script> -->
+
 </html>

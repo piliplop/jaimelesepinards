@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Commande de SOS</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+        crossorigin="anonymous">
+
+    <!-- <script src='https://www.google.com/recaptcha/api.js?render=6LeHFo0UAAAAAFVuf_s4i2PMudRgzpju2HWoXKUJ'></script> -->
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+    <link type="text/css" rel="stylesheet" href="../css/materialize.css" media="screen,projection" />
+    <link rel="stylesheet" href="/css/example.css">
+
+
+</head>
+
+<body>
+        <div class="content">
+
+        <header>
+                <% include ./header %>
+        </header>
+    
+    <h1>FAQ</h1>
+    <h3>C'est quoi "l'état" de mon SOS ?</h3>
+    <div>
+        C'est simple, c'est comme Uber Eats, ça te permet de suivre l'état de ta commande
+        <br>
+        <ul>
+            <li><b>En attente</b> : Du calme chef ! Tu viens de kohmander, on s'en occupe.</li>
+            <li><b>Refusée</b> : Fallait pas commander n'importe quoi. 2000 crêpes ? T'es pas un vrai aventurier toi !
+                Si tu penses que c'est pas justifié, hésites pas à appeler le standard !</li>
+                <li><b>Acceptée</b> : Nos équipes d'aventurier ont bien compris que t'as besoin de nous !</li>
+                <li><b>En préparation</b> : Les Immulistés sont en pleine épreuve !</li>
+                <li><b>En livraison</b> : On a fini de construire le radeau, on arrive avec ta commande !</li>
+                <li><b>Archivée</b> : Ton SOS est terminé, n'hésite pas à refaire appel à nous.</li>
+            </ul>
+    </div>
+    <h3>J'ai perdu mon numéro de commande, comment faire ?</h3>
+    <div>
+        Ne t'en fais pas ! Si tu as bien rentré ton mail lors de la commande de ton SOS, tu as reçu un lien pour le récupérer.
+        Si tu as fais une erreur dans le mail, appelle-nous et on te donnera les infos sur ton SOS.
+    </div>
+
+    <h3>Contacter les tribus</h3>
+    <div>
+        Tu peux nous contacter sur Facebook (Coline Mulistée), ou nous appeler au : .
+        <br/>
+        Dans le pire des cas tu peux essayer de contacter un Koh, mais s'ils sont au Conseil ils ne répondront pas.
+    </div>
+    <!-- footer -->
+    </div>
+    <div>
+        <% include ./footer %>
+</div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="/js/jquery.cookie.js"></script>
+<script src="/js/commande.js"></script>
+<script src="/js/materialize.js"></script>
+<script src="/js/navbar.js"></script>
+
+</html>

@@ -7,7 +7,6 @@ $(() => {
 
 
     $('#password_submit').click(() => {
-        // ($('#password_input').val())
         $.get({
             url: '/submit_admin_password',
             data: {

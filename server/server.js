@@ -1,4 +1,6 @@
 const express = require("express");
+const https = require('https');
+const http = require('http');
 const app = express();
 const project_root = { root: "." };
 const uuidv1 = require("uuidv1");
@@ -7,8 +9,21 @@ const nodemailer = require('nodemailer');
 const request = require('request');
 const sha256 = require('crypto-js/sha256');
 const helmet = require('helmet');
+const fs = require('fs');
+const ip = require('express-ip');
+
+//ADDWHENPUSH const privateKey = fs.readFileSync('/etc/letsencrypt/live/immulistes.fr/privkey.pem', 'utf8');
+//ADDWHENPUSH const certificate = fs.readFileSync('/etc/letsencrypt/live/immulistes.fr/cert.pem', 'utf8');
+//ADDWHENPUSH const ca = fs.readFileSync('/etc/letsencrypt/live/immulistes.fr/chain.pem', 'utf8');
+
+//ADDWHENPUSH const credentials = {
+//ADDWHENPUSH   key: privateKey,
+//ADDWHENPUSH   cert: certificate,
+//ADDWHENPUSH   ca,
+//ADDWHENPUSH };
 
 app.use(helmet());
+app.use(ip().getIpInfoMiddleware);
 
 const CAPTCHA_SECRET = '6LfvHo0UAAAAAAJkQCBbiZPfoX597UyOrNko3tlx';
 
@@ -16,7 +31,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'noreply.immulistes@gmail.com',
-    pass: 'T8kBcyhboSLJAYtvLZzN'
+    pass: 'Yasuo1998'
   }
 })
 
@@ -48,10 +63,19 @@ app.use(function (req, res, next) {
   next();
 });
 
+//IMPORTANT: keep it in one line
+app.use((req, res, next) => {if (req.get('host').includes('immulistes.fr')) {res.end('');} else {next();}})
+
 app.use((req, res, next) => {
-  console.log('\tCALL :', req.url);
+  // console.log('\tCALL :', req.url);
+  req.ip = (req.headers['x-forwarded-for'] ||
+    req.connection.remoteAddress ||
+    req.socket.remoteAddress ||
+    req.connection.socket.remoteAddress).split(",")[0];
   next();
 })
+
+
 
 // app.use((req, res, next) => {
 //   let new_query = Object.keys(req.query).reduce((acc, v) => {
@@ -72,22 +96,24 @@ app.get("/", (req, res) => {
 
 app.get("/pages/suivi/:token", (req, res) => {
   db_client.query(
-    `select * from commandes where id like $1`,
+    // `select c.*, t.short_name from commandes c, sos_types t where c.id like $1 and t.name like c.sos_type`,
+    'select * from commandes c where id like $1',
     [req.params.token],
     (err, quer_res) => {
       if (err) console.error(err);
-      else if (quer_res.rows.length === 0) return;
+      else if (quer_res.rows.length === 0) res.status(404).send("Commande non trouvée");
       else {
         // console.log(quer_res.rows);
         // console.log(['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email'].reduce((acc, val) => {
         //   acc[val] = quer_res.rows[0][val];
         //   return acc;
         // }, {}))
-        const rows = ['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email', 'delivery_adress', 'amount'].reduce((acc, val) => {
+        const rows = ['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email', 'delivery_adress', 'amount', 'id'].reduce((acc, val) => {
           acc[val] = quer_res.rows[0][val];
           return acc;
         }, {});
-        console.log(quer_res.rows[0]);
+        rows['state'] = translateState(rows['state'])
+        // console.log(quer_res.rows[0]);
         res.render("suivi.ejs", { rows });
       }
     }
@@ -95,7 +121,11 @@ app.get("/pages/suivi/:token", (req, res) => {
 });
 
 app.get('/pages/commande', (req, res) => {
-  res.render('commande.ejs');
+  const query = 'select * from sos_types';
+  // res.render('commande.ejs')
+  db_client.query(query, (err, res_db) => {
+    res.render('commande.ejs', { rows: res_db.rows });
+  })
 })
 
 app.get('/pages/admin', (req, res) => {
@@ -113,7 +143,7 @@ app.get('/pages/admin/:page', (req, res) => {
         db_client.query(query, (err, res_db) => {
           if (err) console.error(err);
           // console.log(res_db.rows)
-          res.render('admin_' + req.params.page + '.ejs', { commands: res_db.rows })
+          res.render(fs.existsSync('views/admin_' + req.params.page + '.ejs') ? 'admin_' + req.params.page + '.ejs' : '404.ejs', { commands: res_db.rows })
         })
       } else {
         res.end('erreur d\'authentification')
@@ -126,17 +156,25 @@ app.get('/pages/admin/:page', (req, res) => {
   }
 });
 
+app.get('/pages/:page', (req, res) => {
+  res.render(fs.existsSync('views/' + req.params.page + '.ejs') ? req.params.page + '.ejs' : '404.ejs', project_root);
+})
+
 app.get("/js/:file", (req, res) => {
   res.sendFile("js_front/" + req.params.file, project_root);
 });
 
 app.get('/css/:file', (req, res) => {
   res.sendFile('css/' + req.params.file, project_root);
-})
+});
 
 app.get('/fonts/:file', (req, res) => {
   res.sendFile('fonts/' + req.params.file, project_root);
-})
+});
+
+app.get('/images/:file', (req, res) => {
+  res.sendFile('images/' + req.params.file, project_root);
+});
 
 let MAX_ID = '0';
 db_client.query('select id from commandes', (err, res) => {
@@ -149,7 +187,7 @@ app.get("/submit_command", (req, res) => {
   let params = req.query;
   // input format check
   const wrong_inputs = checkInputFormats(params);
-  if(wrong_inputs.length !== 0) {
+  if (wrong_inputs.length !== 0) {
     return res.json({
       wrong_inputs,
     });
@@ -161,8 +199,9 @@ app.get("/submit_command", (req, res) => {
     'adress_choice',
     'phone_choice',
   ]
+  // console.log(params)
 
-  const unfilled_required = required_inputs.reduce((acc, v) => (params[v] === undefined || params[v] === '' ? [...acc, v] : acc), []);
+  const unfilled_required = required_inputs.reduce((acc, v) => { console.log(params[v]); return params[v] === undefined || params[v] === '' ? [...acc, v] : acc }, []);
   if (unfilled_required.length !== 0) {
     return res.json({
       missing: unfilled_required,
@@ -176,7 +215,7 @@ app.get("/submit_command", (req, res) => {
     if (err) console.error(err);
     else {
       body = JSON.parse(body);
-      console.log('BODY ', body)
+      // console.log('BODY ', body)
       if (body.success !== undefined && !body.success) {
         captcha_result = 'Failed captcha verification';
         res.json({
@@ -191,8 +230,8 @@ app.get("/submit_command", (req, res) => {
           const mail_params = {
             // from: "Foo from jul@bar.com <donotreply@bar.com>",
             to: params.email_choice,
-            subject: "ta nouvelle commande",
-            text: "tu viens de commander un sos de type " + params.sos_choice + "\n\npour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
+            subject: "Ta nouvelle commande",
+            text: "Tu viens de commander un sos de type " + params.sos_choice + ".\n\nPour le voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + id,
           };
 
           transporter.sendMail(mail_params, (err, info) => {
@@ -201,7 +240,7 @@ app.get("/submit_command", (req, res) => {
           });
         }
 
-        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email, amount, phone) values ($1, $2, $3, $4, $5, 'waiting', $6, $7::numeric, $8)`;
+        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email, amount, phone, ip) values ($1, $2, $3, $4, $5, 'waiting', $6, $7::numeric, $8, $9)`;
 
         // console.log(query);
         // console.log(params);
@@ -214,7 +253,8 @@ app.get("/submit_command", (req, res) => {
             params.additionnal_informations,
             params.email_choice,
             params.amount_choice === '' ? null : parseInt(params.amount_choice),
-            params.phone_choice
+            params.phone_choice,
+            req.ip
           ],
           (err, res) => {
             if (err) console.log(err);
@@ -234,12 +274,12 @@ app.get("/submit_command", (req, res) => {
 
 app.get('/submit_admin_password', (req, res) => {
   // req.query.password
-  console.log(sha256(req.query.password).toString())
+  // console.log(sha256(req.query.password).toString())
   // TODO: stronger password
   const password_query = `select * from authentification where hash like $1`;
   db_client.query(password_query, [sha256(req.query.password).toString()], (err, res_db) => {
     if (err) console.log(err);
-    console.log(res_db.rows)
+    // console.log(res_db.rows)
     if (res_db.rows.length === 1) {
       const token = uuidv1();
       const insert_query = `insert into admin_tokens values ('${token}')`
@@ -255,11 +295,12 @@ app.get('/submit_admin_password', (req, res) => {
 
 app.get('/change_command_state', (req, res) => {
   const decline_reason = typeof (req.query.reason) === 'undefined' ? '' : req.query.reason;
-  const query = `update commandes set state = $1, decline_reason = $2 where id like $3`;
+  const query = `update commandes set state = $1, decline_reason = $2, last_modif_qg = $3 where id like $4`;
   // console.log(req.query);
   db_client.query(query, [
     req.query.new_state,
     decline_reason,
+    req.query.qg,
     req.query.command_id
   ], (err, res_db) => {
     if (err) console.error(err);
@@ -268,7 +309,7 @@ app.get('/change_command_state', (req, res) => {
       const mail_params = {
         to: req.query.command_email,
         subject: "Mise à jour de ta commande",
-        text: "Un koh'steau ou une koh'lette a modifié l'état de ta commande. son nouvel état est " + req.query.new_state + "\nPour la voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + req.query.command_id,
+        text: "Un immulisté a modifié l'état de ta commande. Son nouvel état est " + req.query.new_state + "\nPour la voir, clique ici : http://localhost:3000/pages/commande?add_sos=" + req.query.command_id,
       };
 
       transporter.sendMail(mail_params, (err, info) => {
@@ -316,6 +357,14 @@ app.get('*', (req, res) => {
 
 app.listen('3000');
 
+//ADDWHENPUSH const https_server = https.createServer(credentials, app);
+const http_server = http.createServer((req, res) => {
+  res.writeHead('301', { 'Location': 'https://' + req.headers['host'] + req.url })
+})
+
+//ADDWHENPUSH https_server.listen('3000');
+//ADDWHENPUSH http_server.listen('3000')
+
 console.log("http://localhost:3000");
 
 function parseCookies(cookies) {
@@ -330,7 +379,7 @@ function parseCookies(cookies) {
 }
 
 function checkInputFormats(inputs) {
-  console.log(inputs)
+  // console.log(inputs)
   return Object.keys(inputs).reduce((acc, k) => {
     // console.log('val :', k)
     if (inputs[k] !== undefined) {
@@ -349,7 +398,7 @@ function checkInputFormats(inputs) {
 
         case 'phone_choice':
           const phone_regex = /^(?:(?:\+|00)33[\s.-]{0,3}(?:\(0\)[\s.-]{0,3})?|0)[1-9](?:(?:[\s.-]?\d{2}){4}|\d{2}(?:[\s.-]?\d{3}){2})$/;
-          if(phone_regex.test(inputs[k]) || inputs[k] === '') return acc;
+          if (phone_regex.test(inputs[k]) || inputs[k] === '') return acc;
           else return [...acc, k];
           break;
 
@@ -359,4 +408,16 @@ function checkInputFormats(inputs) {
       }
     }
   }, []);
+}
+
+function translateState(v) {
+  switch (v) {
+    case "waiting": return 'En attente';
+    case "accepted": return 'Acceptée';
+    case "preparing": return 'En préparation';
+    case "delivering": return 'En livraison';
+    case "archived": return 'Archivée';
+    case "declined": return 'Refusée';
+    default: return '';
+  }
 }

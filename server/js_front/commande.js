@@ -6,7 +6,7 @@ $(() => {
         // $.removeCookie('command_tokens')
         console.log(new URL(window.location.href).searchParams.get('add_sos'));
 
-        initNavBar();
+        initMaterialize();
         updateTrackLinks();
 
         const new_sos_id = new URL(window.location.href).searchParams.get('add_sos');
@@ -16,10 +16,10 @@ $(() => {
         updateTrackLinks();
     }
 
-    function initNavBar() {
+    function initMaterialize() {
         $(document).ready(() => {
             $('.sidenav').sidenav();
-
+            $('select').formSelect();
         });
     }
 
@@ -132,8 +132,24 @@ $(() => {
         });
     }
 
-    $('#submit').click(() => {
+    $('.toggle_sos_list').click(function () {
+        const sos_displayed = $('#sos_list_div').css('display') === 'none' ? false : true;
+        if (sos_displayed) {
+            $('#sos_list_div').css('display', 'none');
+        } else {
+            $('#sos_list_div').css('display', 'inline-block');
+            //download the img
+            if($('#sos_list_div').children().length === 0){
+            $('#sos_list_div')
+                .append($('<img>')
+                    .attr('src', '/images/tapir.jpg'));
+            }
 
+        }
+    });
+
+    $('#submit_div').click(() => {
+        // alert('u')
         const captcha_response = grecaptcha.getResponse()
         const data = {
             ...getInputData(),
@@ -150,7 +166,7 @@ $(() => {
                     if (d.missing) {
                         // TODO: show missing required fields
                         alert('Tu as oublié des champs requis');
-                    } else if(d.wrong_inputs) {
+                    } else if (d.wrong_inputs) {
                         //TODO: show wrong fields
                         alert("Tu t'es trompé sur le format de certaines de tes entrées")
                     } else {
@@ -188,7 +204,7 @@ $(() => {
     $('#submit_command_id').click(() => {
         const new_id = $('#input_command_id').val();
         addToListedCommands(new_id);
-    })
+    });
 
     function addToListedCommands(new_id, reload_page = false) {
         let command_tokens = $.cookie('command_tokens');
