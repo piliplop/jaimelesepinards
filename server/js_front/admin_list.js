@@ -34,6 +34,22 @@ $(() => {
         })
     });
 
+    $('.submit_assign_to').click(function() {
+        const email = $(this).siblings('.assign_to').val();
+        const id = $(this).parent().parent().attr('id')
+        $.get({
+            url: '/assign_task_to',
+            data: {
+                email,
+                id,
+            }
+        })
+    })
+
+    $('#toggle_ptitdej').click(function() {
+        $('.Petit').parent().slideToggle();
+    })
+
     let hide_archived = false;
     function show_hide_archived(hide_archived){
         if(hide_archived){
@@ -43,6 +59,7 @@ $(() => {
             $('.command.archived, .command.declined').css('display', 'block');
             $('#toggle_archived, .command.declined').val("Cacher les koh'mmandes archivées ou refusées")
         }
+        // $('.command.archived, .command.declined').slideToggle();
     }
 
     $('#toggle_archived').click(function() {

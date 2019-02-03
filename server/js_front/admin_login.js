@@ -14,7 +14,7 @@ $(() => {
             },
             success: (data => {
                 const date = new Date();
-                const minutes = 15;
+                const minutes = 120;
                 date.setTime(date.getTime() + (minutes * 60 * 1000));
                 $.cookie('auth_token', data.token, { expires: date })
                 console.log($.cookie('auth_token'))

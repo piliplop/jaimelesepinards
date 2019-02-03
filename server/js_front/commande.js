@@ -66,10 +66,9 @@ $(() => {
                                         url: '/pages/suivi/' + v.id,
                                         success: d => {
                                             // remove spaces then capture the body tag
-                                            $('#tracking_informations').html(d.replace(/(\r\n\t|\n|\r\t)/gm, "").match(/<body>.*<\/body>/)[0])
                                             this.already_shown = true
-                                            console.log(v);
-                                            $('#tracking_informations').append(
+                                            $('#tracking_informations').html(d.replace(/(\r\n\t|\n|\r\t)/gm, "").match(/<body>.*<\/body>/)[0])
+                                            .append(
                                                 $('<div></div>')
                                                     .append(
                                                         $('<input>')

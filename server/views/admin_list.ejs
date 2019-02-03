@@ -18,6 +18,7 @@
 </head>
 
 <body>
+    <!-- <%=JSON.stringify(persons);%> -->
     <!-- <header>
                 <% include ./header %>
         </header> -->
@@ -33,22 +34,31 @@
     <div id="toggle_archived_div">
         <input type="button" id="toggle_archived" value="Afficher les koh'mmandes archivées ou refusées">
     </div>
+    <div id="toggle_ptitdej_div">
+        <input type="button" id="toggle_ptitdej" value="Cacher les petits déj">
+    </div>
     <hr>
     <h1>Liste Des koh'mmandes</h1>
     <!--<p><%= JSON.stringify(commands) %></p>-->
     <% for(c in commands) {%>
     <!-- <p><%=JSON.stringify(commands[c])%></p> -->
     <div class="command <%=commands[c]['state']%>" id="<%=commands[c]['id']%>" email="<%=commands[c]['email']%>">
-        <b>Type de SOS :
+        <b class="<%=commands[c]['sos_type']%>">Type de SOS :
             <%=commands[c]['sos_type']%></b>
+        <p>Date de création : <%=commands[c]['created_at']%></p>
         <p>Quantité :
             <%=commands[c]['amount']%>
         </p>
         <p>Adresse de livraison:
-            <%=commands[c]['delivery_adress']%>
+            <%=commands[c]['delivery_adress']%> 
+            <a href="https://www.google.com/maps/place/<%=commands[c]['delivery_adress']%>" target="_blank">lien Google
+                Maps</a>
         </p>
         <p>Numéro de téléphone :
             <%= commands[c]['phone'];%>
+        </p>
+        <p>Nom :
+            <%= commands[c]['full_name']%>
         </p>
         <p>Heure demandée :
             <%=commands[c]['delivery_hour']%>
@@ -68,6 +78,17 @@
         <p class="command_state">Etat de la commande :
             <%=commands[c]['state']%>
         </p>
+        <div class="assign_to_div">
+            <p><%if(commands[c]['assigned_to']){%>Assigné à <%=commands[c]['assigned_to']%><%}%></p>
+            <select class="assign_to">
+                <%for(p in persons){%>
+                <option value="<%=persons[p].email%>">
+                    <%=persons[p].name%>
+                </option>
+                <%}%>
+            </select>
+            <input type="button" class="submit_assign_to" value="Assigner">
+        </div>
         <div class="change_state">
             Changer l'état :
             <select class="select_state">

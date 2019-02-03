@@ -64,7 +64,7 @@ app.use(function (req, res, next) {
 });
 
 //IMPORTANT: keep it in one line
-app.use((req, res, next) => {if (req.get('host').includes('immulistes.fr')) {res.end('');} else {next();}})
+app.use((req, res, next) => { if (req.get('host').includes('immulistes.fr')) { res.end(''); } else { next(); } })
 
 app.use((req, res, next) => {
   // console.log('\tCALL :', req.url);
@@ -108,7 +108,7 @@ app.get("/pages/suivi/:token", (req, res) => {
         //   acc[val] = quer_res.rows[0][val];
         //   return acc;
         // }, {}))
-        const rows = ['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email', 'delivery_adress', 'amount', 'id'].reduce((acc, val) => {
+        const rows = ['sos_type', 'delivery_hour', 'additional_informations', 'state', 'decline_reason', 'email', 'delivery_adress', 'amount', 'id', 'full_name'].reduce((acc, val) => {
           acc[val] = quer_res.rows[0][val];
           return acc;
         }, {});
@@ -139,11 +139,15 @@ app.get('/pages/admin/:page', (req, res) => {
     db_client.query(query, [cookies['auth_token']], (err, res_db) => {
       if (err) console.error(err);
       if (res_db.rows.length > 0) {
-        query = `select * from commandes`;
+        query = `select *, TO_CHAR(creation_date,'Dy : HH24:MI:SS') created_at from commandes order by state desc, creation_date`;
         db_client.query(query, (err, res_db) => {
           if (err) console.error(err);
           // console.log(res_db.rows)
-          res.render(fs.existsSync('views/admin_' + req.params.page + '.ejs') ? 'admin_' + req.params.page + '.ejs' : '404.ejs', { commands: res_db.rows })
+          query = 'select * from personinfo';
+          db_client.query(query, (err, res_db_pers) => {
+            res.render(fs.existsSync('views/admin_' + req.params.page + '.ejs') ? 'admin_' + req.params.page + '.ejs' : '404.ejs', { commands: res_db.rows, persons: res_db_pers.rows })
+          })
+
         })
       } else {
         res.end('erreur d\'authentification')
@@ -198,6 +202,7 @@ app.get("/submit_command", (req, res) => {
     'sos_choice',
     'adress_choice',
     'phone_choice',
+    'full_name_choice'
   ]
   // console.log(params)
 
@@ -240,7 +245,15 @@ app.get("/submit_command", (req, res) => {
           });
         }
 
-        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email, amount, phone, ip) values ($1, $2, $3, $4, $5, 'waiting', $6, $7::numeric, $8, $9)`;
+        //https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=AIzaSyCv3DtZS6kQcjKunsexJS15KubCEOA0_Mc
+
+        //const GoogleMapUrl = "https://maps.googleapis.com/maps/api/geocode/json?"
+        //const apiKeyMaps = "AIzaSyCv3DtZS6kQcjKunsexJS15KubCEOA0_Mc";
+
+
+        dataFromMaps = ""
+
+        const query = `insert into commandes (id, sos_type, delivery_hour, delivery_adress, additional_informations, state, email, amount, phone, ip, full_name) values ($1, $2, $3, $4, $5, 'waiting', $6, $7::numeric, $8, $9, $10)`;
 
         // console.log(query);
         // console.log(params);
@@ -254,7 +267,8 @@ app.get("/submit_command", (req, res) => {
             params.email_choice,
             params.amount_choice === '' ? null : parseInt(params.amount_choice),
             params.phone_choice,
-            req.ip
+            req.ip,
+            params.full_name_choice,
           ],
           (err, res) => {
             if (err) console.log(err);
@@ -291,6 +305,23 @@ app.get('/submit_admin_password', (req, res) => {
       })
     }
   })
+});
+
+app.get('/assign_task_to', (req, res) => {
+  const select_query = 'select * from commandes where id like $1';
+  db_client.query(select_query, [req.query.id], (err, res_db) => {
+      const update_query = 'update commandes set assigned_to = $1 where id like $2';
+      db_client.query(update_query, [req.query.email, req.query.id])
+      const mail_params = {
+      to: req.query.email,
+      subject:  ` ${res_db.rows[0].id} - Une commande t'a été assignée`,
+      text: `Tu dois livrer une commande ${res_db.rows[0].sos_type} (quantité : ${res_db.rows[0].amount}) à ${res_db.rows[0].full_name}\nAdresse de livraison : ${res_db.rows[0].delivery_adress}, téléphone : ${res_db.rows[0].phone}\nInformations complémentaires : ${res_db.rows[0].additionnal_informations}`
+    };
+    transporter.sendMail(mail_params, (err, info) => {
+      if (err) console.error(err);
+      else console.log('mail sent ! ' + info.response);
+    });
+  });
 });
 
 app.get('/change_command_state', (req, res) => {
@@ -358,9 +389,14 @@ app.get('*', (req, res) => {
 app.listen('3000');
 
 //ADDWHENPUSH const https_server = https.createServer(credentials, app);
-const http_server = http.createServer((req, res) => {
-  res.writeHead('301', { 'Location': 'https://' + req.headers['host'] + req.url })
+const http_server = express();
+http_server.get('*', (req, res) => {
+  res.redirect('https://immulistes.fr');
 })
+http_server.listen('3001');
+// const http_server = http.createServer((req, res) => {
+//   res.writeHead('301', { 'Location': 'https://' + req.headers['host'] + req.url })
+// })
 
 //ADDWHENPUSH https_server.listen('3000');
 //ADDWHENPUSH http_server.listen('3000')

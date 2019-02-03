@@ -6,9 +6,11 @@
     <title>Commande de SOS</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!--Import materialize.css-->
-
-
-
+    <meta property="og:url"                content="https://www.immulistes.com" />
+    <meta property="og:title"              content="SOS des Immulistés" />
+    <meta property="og:description"        content="Envie de crêptes, massages et plus ?" />
+    <meta property="og:image"              content="https://i.imgur.com/aT0iPcD.png" />
+ 
     <!-- <script src='https://www.google.com/recaptcha/api.js?render=6LeHFo0UAAAAAFVuf_s4i2PMudRgzpju2HWoXKUJ'></script> -->
     <script src='https://www.google.com/recaptcha/api.js'></script>
     <link type="text/css" rel="stylesheet" href="../css/materialize.css" media="screen,projection" />
@@ -70,6 +72,10 @@
                             <label for="phone_choice" class="required">Donne ton tel :</label>
                             <input type="tel" placeholder="06XXXXXXXX" name="phone_choice" id="phone_choice" class="required">
                         </div>
+                    </div>
+                    <div class="row">
+                        <label for="full_name_choice" class="required">Donne ton nom :</label>
+                        <input type="text" placeholder="06XXXXXXXX" name="full_name_choice" id="full_name_choice" class="required">
                     </div>
                     <div class="block" id="div_additionnal_informations">
                         <label for="additionnal_informations">Autre chose chef ?</label>
